@@ -11,7 +11,8 @@
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
-#include<stdio.h>
+#include <stdio.h>
+#include <stdint.h>
 #include"main.h"
 #include "led.h"
 
@@ -406,4 +407,3 @@ void BusFault_Handler(void)
 	printf("Exception : BusFault\n");
 	while(1);
 }
-

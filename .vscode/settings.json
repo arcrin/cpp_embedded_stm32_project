@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "main.h": "c"
+        "main.h": "c",
+        "cstdint": "c",
+        "led.h": "c",
+        "stdint.h": "c",
+        "stdio.h": "c",
+        "_stdint.h": "c",
+        "_intsup.h": "c"
     }
 }
