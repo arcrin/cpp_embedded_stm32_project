@@ -8,7 +8,7 @@ MEMORY
 
 SECTIONS
 {
-    .isr_vector :
+    .isr_vector (READONLY):
     {
         . = ALIGN(4);
         KEEP(*(.isr_vector))
@@ -27,7 +27,7 @@ SECTIONS
     }> FLASH
 
     __exidx_start = .;
-    .ARM.exidx :
+    .ARM.exidx (READONLY) :
     {
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
     }> FLASH
@@ -53,6 +53,6 @@ SECTIONS
         _ebss = .;
         __bss_end__ = _ebss;
         end = .;
-        __end__ = end;'
+        __end__ = end;
     }> SRAM
 }

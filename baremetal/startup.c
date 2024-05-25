@@ -16,7 +16,7 @@ extern uint32_t uwTick;
 
 int main(void);
 
-void _libc_init_array(void);
+// void __libc_init_array(void);
 
 
 void Reset_Handler(void);      
@@ -235,7 +235,7 @@ void Reset_Handler(void){
     for(uint32_t i = 0; i < size; i++) {
         *pDst++ = 0;
     }
-    __libc_init_array();
+    // __libc_init_array();
 
     // call main
     main();
