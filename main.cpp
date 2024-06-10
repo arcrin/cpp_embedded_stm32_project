@@ -8,15 +8,14 @@
 #define OL 123          // Object-like macro
 #define FL(x) ((x)+1)   // function-like macro
 
-enum EPOLL_EVENTS {
-    EPOLLIN = 0x001,
-    #define EPOLLIN EPOLLIN
-}
+// enum EPOLL_EVENTS {
+//     EPOLLIN = 0x001,
+//     #define EPOLLIN EPOLLIN;
+// }
 
 
 
 int main(int, char**){
     // std::cout << "Hello, from cpp_embedded_stm32_project!\n";
-    int result = ADD(1,2);
-    printf("result: %d\n", result);
+    return 0;
 }
