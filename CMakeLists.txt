@@ -1,11 +1,16 @@
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.21)
 
 # Set the project name
 project(MyCppProject)
 
 # Specify the C++ standard
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+include_directories(
+    resourceshell
+)
 
 # Add the executable
 add_executable(MyCppProject main.cpp)

@@ -6,7 +6,16 @@
         "stdint.h": "c",
         "stdio.h": "c",
         "_stdint.h": "c",
-        "_intsup.h": "c"
+        "_intsup.h": "c",
+        "compare": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "type_traits": "cpp",
+        "array": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "random": "cpp"
     },
     "C_Cpp.default.compilerPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe"
 }
