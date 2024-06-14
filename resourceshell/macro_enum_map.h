@@ -1,30 +1,13 @@
 #pragma once
 
-#define PARENS()
+#define PARENS ()
 #define EXPAND1(...) __VA_ARGS__
-#define EXPAND2(...) EXPAND1(EXPAND1(EXPAND1(EXPAND1(__VA_ARGS))))
-#define EXPAND3(...) EXPAND2(EXPAND2(EXPAND2(EXPAND2(__VA_ARGS))))
-#define EXPAND4(...) EXPAND3(EXPAND3(EXPAND3(EXPAND3(__VA_ARGS))))
+#define EXPAND2(...) EXPAND1(EXPAND1(EXPAND1(EXPAND1(__VA_ARGS__))))
+#define EXPAND3(...) EXPAND2(EXPAND2(EXPAND2(EXPAND2(__VA_ARGS__))))
+#define EXPAND4(...) EXPAND3(EXPAND3(EXPAND3(EXPAND3(__VA_ARGS__))))
 #define EXPAND(...) EXPAND4(EXPAND4(EXPAND4(EXPAND4(__VA_ARGS__))))
 
-#define FOR_EACH_AGAIN() FOR_EACH_HELPER
-#define FOR_EACH_HELPER(macro, a1, ...) macro(a1) __VA_OPT__(FOR_EACH_AGAIN PARENS (macro, __VA_ARGS__))
-#define FOR_EACH(macro, ...) __VA_OPT__(EXPAND(FOR_EACH_HELPER(macro, __VA_ARGS__)))
-
-// #define ENUM_CASE(name)             \
-//     case name:                      \
-//         return #name;
-
-// #define MAKE_ENUM(type, ...)                            \
-//     enum type {__VA_ARGS__};                            \
-//     constexpr const char * to_cstring(type _e)          \
-//     {                                                   \
-//         using enum type;                                \
-//         switch (_e){                                    \
-//         FOR_EACH(ENUM_CASE, __VA_ARGS__)                \
-//         default: return "unknown";                      \
-//         }                                               \
-//     }
+#define FOR_EACH(macro, helper, ...) __VA_OPT__(EXPAND(helper(macro, __VA_ARGS__)))
 
 #define MAKE_ENUM(type_name, ...)   \
 type_name{                          \
@@ -54,12 +37,21 @@ type_name{                          \
 #define FOR_EACH_HELPER_8(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, ...) macro(a1, a2, a3, a4, a5, a6, a7, a8, a9) __VA_OPT__(FOR_EACH_AGAIN_8 PARENS (macro, __VA_ARGS__))
 #define FOR_EACH_HELPER_9(macro, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, ...) macro(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) __VA_OPT__(FOR_EACH_AGAIN_9 PARENS (macro, __VA_ARGS__))
 #define FOR_EACH_AGAIN_NONE() FOR_EACH_HELPER_NONE
-#define FOR_EACH_AGAIN1() FOR_EACH_HELPER_1
-#define FOR_EACH_AGAIN2() FOR_EACH_HELPER_2 
-#define FOR_EACH_AGAIN3() FOR_EACH_HELPER_3
-#define FOR_EACH_AGAIN4() FOR_EACH_HELPER_4 
-#define FOR_EACH_AGAIN5() FOR_EACH_HELPER_5
-#define FOR_EACH_AGAIN6() FOR_EACH_HELPER_6
-#define FOR_EACH_AGAIN7() FOR_EACH_HELPER_7
-#define FOR_EACH_AGAIN8() FOR_EACH_HELPER_8
-#define FOR_EACH_AGAIN9() FOR_EACH_HELPER_9
+#define FOR_EACH_AGAIN_1() FOR_EACH_HELPER_1
+#define FOR_EACH_AGAIN_2() FOR_EACH_HELPER_2 
+#define FOR_EACH_AGAIN_3() FOR_EACH_HELPER_3
+#define FOR_EACH_AGAIN_4() FOR_EACH_HELPER_4 
+#define FOR_EACH_AGAIN_5() FOR_EACH_HELPER_5
+#define FOR_EACH_AGAIN_6() FOR_EACH_HELPER_6
+#define FOR_EACH_AGAIN_7() FOR_EACH_HELPER_7
+#define FOR_EACH_AGAIN_8() FOR_EACH_HELPER_8
+#define FOR_EACH_AGAIN_9() FOR_EACH_HELPER_9
+
+#define ENUM_MAP(enum_type_name, map_type_name, num_args, value_helper, ...) \
+    MAKE_ENUM(enum_type_name, FOR_EACH(KEY_HELPER, FOR_EACH_HELPER_##num_args, __VA_ARGS__)); \
+    MAKE_MAP(map_type_name, FOR_EACH(value_helper, FOR_EACH_HELPER_##num_args, __VA_ARGS__))
+
+#define ENUM_MAP0(enum_type_name, map_type_name, value_helper, ...) \
+    MAKE_ENUM(enum_type_name, FOR_EACH(KEY_HELPER, FOR_EACH_HELPER_NONE, __VA_ARGS__)); \
+    MAKE_MAP(map_type_name, FOR_EACH(value_helper, FOR_EACH_HELPER_NONE, __VA_ARGS__))
+    
