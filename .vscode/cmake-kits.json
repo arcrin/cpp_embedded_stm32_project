@@ -5,6 +5,8 @@
             "CC": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe",
             "CXX": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe"
         }
+
+        
     },
     {
         "name": "ARM GCC 13.2.1",
