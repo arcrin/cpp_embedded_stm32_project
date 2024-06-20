@@ -35,7 +35,7 @@ namespace stm32f407{
         uint32_t Reserved1;
         volatile uint32_t APB1RSTR;
         volatile uint32_t APB2RSTR;
-        uint32_t Reserved2[2];
+        uint16_t Reserved2[2];
         volatile uint32_t AHB1ENR;
         volatile uint32_t AHB2ENR;
         volatile uint32_t AHB3ENR;
@@ -59,82 +59,6 @@ namespace stm32f407{
      * 
      * GPIO 
      ****************************************************************/
-
-    /*
-     * GPIO clock control
-     */
-    inline void enableGPIOAClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 0);
-    }
-
-    inline void enableGPIOBClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 1);
-    }
-
-    inline void enableGPIOCClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 2);
-    }
-
-    inline void enableGPIODClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 3);
-    }   
-
-    inline void enableGPIOEClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 4);
-    }
-
-    inline void enableGPIOFClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 5);
-    }
-
-    inline void enableGPIOGClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 6);
-    }
-
-    inline void enableGPIOHClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 7);
-    }
-
-    inline void enableGPIOIClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR | (1 << 8);
-    }
-
-    inline void disableGPIOAClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 0);
-    }
-
-    inline void disableGPIOBClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 1);
-    }
-
-    inline void disableGPIOCClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 2);
-    }
-
-    inline void disableGPIODClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 3);
-    }
-
-    inline void disableGPIOEClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 4);
-    }
-
-    inline void disableGPIOFClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 5);
-    }
-
-    inline void disableGPIOGClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 6);
-    }
-
-    inline void disableGPIOHClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 7);
-    }
-
-    inline void disableGPIOIClock() {
-        RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 8);
-    }
-
 
     /*
      * GPIO register definition structure

@@ -15,44 +15,80 @@ using namespace stm32f407;
 inline void GPIOHandle::periClockControl(ClockStatus status) {
     if (status == ClockStatus::ENABLE) {
         if (m_pGPIOx == GPIOA) {
-            enableGPIOAClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 0);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOB) {
-            enableGPIOBClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 1);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOC) {
-            enableGPIOCClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 2);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOD) {
-            enableGPIODClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 3);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOE) {
-            enableGPIOEClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 4);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOF) {
-            enableGPIOFClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 5);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOG) {
-            enableGPIOAClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 6);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOH) {
-            enableGPIOHClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 7);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOI) {
-            enableGPIOIClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp |= (1 << 8);
+            RCC->AHB1ENR = temp;
         }
     } 
     else if (status == ClockStatus::DISABLE) {
         if (m_pGPIOx == GPIOA) {
-            disableGPIOAClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 0);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOB) {
-            disableGPIOAClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 1);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOC) {
-            disableGPIOCClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 2);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOD) {
-            disableGPIODClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 3);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOE) {
-            disableGPIOEClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 4);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOF) {
-            disableGPIOFClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 5);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOG) {
-            disableGPIOAClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 6);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOH) {
-            disableGPIOHClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 7);
+            RCC->AHB1ENR = temp;
         } else if (m_pGPIOx == GPIOI) {
-            disableGPIOAClock();
+            uint32_t temp = RCC->AHB1ENR;
+            temp &= ~(1 << 8);
+            RCC->AHB1ENR = temp;
         }
     }
 }

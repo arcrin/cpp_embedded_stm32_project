@@ -24,23 +24,32 @@ set(EXECUTABLE ${PROJECT_NAME}.elf)
 
 # Create a library from the source files in HAL_DIR
 file(GLOB HAL_SOURCES ${HAL_DIR}/src/*.cpp)
-add_library(hall_lib ${HAL_SOURCES})
+message(STATUS "All source fiels ${HAL_SOURCES}" )
+add_library(hal_lib ${HAL_SOURCES})
 
 # Specify the directory for the header files that are used for the project
 include_directories(${HAL_DIR}/inc)
 
 add_executable(${EXECUTABLE} 
-    startup.c
+    ${CMAKE_SOURCE_DIR}/startup.c
+    ${HAL_SOURCES}
     ${APP_DIR}/exp1_toggle_push_pull_led.cpp
 )
+
+# Link the library to the executable
+# target_link_libraries(${EXECUTABLE} hal_lib)
 
 # add_executable(${EXECUTABLE}
 #         ${BAREMETAL_DIR}/startup.c
 #         ${BAREMETAL_DIR}/main.c
 #         ${BAREMETAL_DIR}/led.c
 # )
-# Link the library to the executable
-target_link_libraries(${EXECUTABLE} hall_lib)
+
+# add_executable(${EXECUTABLE}
+#         ${BAREMETAL_DIR}/startup.c
+#         ${BAREMETAL_DIR}/exp1_toggle_push_pull_led.cpp
+#         ${BAREMETAL_DIR}/stm32f407xx_gpio_driver.cpp
+# )
 
 target_compile_options(${EXECUTABLE} PRIVATE
         -mcpu=${MACH}
@@ -53,7 +62,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 
 target_link_options(${EXECUTABLE} PRIVATE
         -T ${CMAKE_SOURCE_DIR}/linker.ld
-#        -nostdlib
+        -nostdlib
         -mcpu=${MACH}
         -mthumb
         -mfloat-abi=soft
