@@ -45,11 +45,6 @@ add_executable(${EXECUTABLE}
 #         ${BAREMETAL_DIR}/led.c
 # )
 
-# add_executable(${EXECUTABLE}
-#         ${BAREMETAL_DIR}/startup.c
-#         ${BAREMETAL_DIR}/exp1_toggle_push_pull_led.cpp
-#         ${BAREMETAL_DIR}/stm32f407xx_gpio_driver.cpp
-# )
 
 target_compile_options(${EXECUTABLE} PRIVATE
         -mcpu=${MACH}
