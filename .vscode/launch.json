@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Cortex Debug",
+            "name": "STM32 Discovery Debug",
             "type": "cortex-debug",
             "request": "launch",
             "servertype": "openocd",
@@ -24,6 +24,30 @@
             "svdFile": "${workspaceRoot}/stm32f407.svd",
             "preLaunchTask": "Build with CMake",
         },
+
+        {
+            "name": "CLC Debug",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/cpp_stm32_embedded.elf",
+            "configFiles": [
+                "swd_ft.cfg",
+                "stm32f1x_no_working_area.cfg"
+            ],
+            "serverpath": "C:/Projects/Delta/tj_software/interface/interface/OpenOCD/windows/openocd.exe", 
+            "serverArgs": [
+                "-s", "C:/Projects/Delta/tj_software/interface/interface/OpenOCD/common/scripts",
+                "-s", "C:/Projects/Delta/tj_software/interface/interface/OpenOCD",
+                "-c", "ftdi_channel 0; transport select swd",
+                "-c", "init; reset init"
+            ],
+            "gdbPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gdb.exe",
+            "svdFile": "${workspaceRoot}/stm32f407.svd",
+            "preLaunchTask": "Build with CMake",
+        },
+        
         {
             "name":"GNU GCC Debug",
             "type": "cppdbg",

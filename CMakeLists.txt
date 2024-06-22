@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.21)
 
 
+# Set this variable to match the MCU you are working with. 
+# At this point, it needs to match the dir name where the HAL is defined.
+# set(MCU_TYPE stm32f407xx)
+set(MCU_TYPE stm32f103xx)
 
+set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/arm-none-eabi-gpp.cmake)
 set(BAREMETAL_DIR ${CMAKE_SOURCE_DIR}/baremetal)
 set(APP_DIR ${CMAKE_SOURCE_DIR}/app)
-set(HAL_DIR ${CMAKE_SOURCE_DIR}/hal/stm32f407xx)
+set(HAL_DIR ${CMAKE_SOURCE_DIR}/hal/${MCU_TYPE})
 
 
 project(cpp_stm32_embedded)
@@ -24,27 +29,17 @@ set(EXECUTABLE ${PROJECT_NAME}.elf)
 
 # Create a library from the source files in HAL_DIR
 file(GLOB HAL_SOURCES ${HAL_DIR}/src/*.cpp)
-message(STATUS "All source fiels ${HAL_SOURCES}" )
-add_library(hal_lib ${HAL_SOURCES})
+message(STATUS "All source files ${HAL_SOURCES}" )
+message(STATUS "Build Configuration: ${CMAKE_BUILD_TYPE}")
 
 # Specify the directory for the header files that are used for the project
 include_directories(${HAL_DIR}/inc)
 
 add_executable(${EXECUTABLE} 
-    ${CMAKE_SOURCE_DIR}/startup.c
+    ${HAL_DIR}/startup.c
     ${HAL_SOURCES}
-    ${APP_DIR}/exp1_toggle_push_pull_led.cpp
+    ${APP_DIR}/${MCU_TYPE}/main.cpp
 )
-
-# Link the library to the executable
-# target_link_libraries(${EXECUTABLE} hal_lib)
-
-# add_executable(${EXECUTABLE}
-#         ${BAREMETAL_DIR}/startup.c
-#         ${BAREMETAL_DIR}/main.c
-#         ${BAREMETAL_DIR}/led.c
-# )
-
 
 target_compile_options(${EXECUTABLE} PRIVATE
         -mcpu=${MACH}
@@ -52,11 +47,12 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -mfloat-abi=soft
         -Wall
         -fno-exceptions
-        $<$<CONFIG:Debug>:-O0>
+        # $<$<CONFIG:Debug>:-O0>
+        -O0
         )
 
 target_link_options(${EXECUTABLE} PRIVATE
-        -T ${CMAKE_SOURCE_DIR}/linker.ld
+        -T ${HAL_DIR}/linker.ld
         -nostdlib
         -mcpu=${MACH}
         -mthumb
@@ -64,3 +60,8 @@ target_link_options(${EXECUTABLE} PRIVATE
         --specs=nosys.specs
         -Wl,-Map=${PROJECT_NAME}.map
         )
+get_target_property(EXECUTABLE_COMPILE_OPTIONS ${EXECUTABLE} COMPILE_OPTIONS)
+message(STATUS "Compile options for ${EXECUTABLE}: ${EXECUTABLE_COMPILE_OPTIONS}")
+
+get_target_property(EXECUTABLE_LINK_OPTIONS ${EXECUTABLE} LINK_OPTIONS)
+message(STATUS "Link options for ${EXECUTABLE}: ${EXECUTABLE_LINK_OPTIONS}")
