@@ -26,7 +26,7 @@
         },
 
         {
-            "name": "CLC Debug",
+            "name": "CLC Debug - work",
             "type": "cortex-debug",
             "request": "launch",
             "servertype": "openocd",
@@ -40,6 +40,29 @@
             "serverArgs": [
                 "-s", "C:/Projects/Delta/tj_software/interface/interface/OpenOCD/common/scripts",
                 "-s", "C:/Projects/Delta/tj_software/interface/interface/OpenOCD",
+                "-c", "ftdi_channel 0; transport select swd",
+                "-c", "init; reset init"
+            ],
+            "gdbPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gdb.exe",
+            "svdFile": "${workspaceRoot}/stm32f407.svd",
+            "preLaunchTask": "Build with CMake",
+        },
+
+        {
+            "name": "CLC Debug - home",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/cpp_stm32_embedded.elf",
+            "configFiles": [
+                "swd_ft.cfg",
+                "stm32f1x_no_working_area.cfg"
+            ],
+            "serverpath": "F:/Project/Delta/interface/interface/OpenOCD/windows/openocd.exe", 
+            "serverArgs": [
+                "-s", "F:/Project/Delta/interface/interface/OpenOCD/common/scripts",
+                "-s", "F:/Project/Delta/interface/interface/OpenOCD",
                 "-c", "ftdi_channel 0; transport select swd",
                 "-c", "init; reset init"
             ],
