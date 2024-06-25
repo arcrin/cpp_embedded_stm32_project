@@ -56,13 +56,13 @@ namespace stm32f407{
     inline RCCRegDef* RCC = reinterpret_cast<RCCRegDef*>(RCC_BASEADDR);
 
     /****************************************************************
-     * 
      * GPIO 
      ****************************************************************/
 
     /*
      * GPIO clock control
      */
+    // clock enable
     inline void enableGPIOAClock() {
         RCC->AHB1ENR = RCC->AHB1ENR | (1 << 0);
     }
@@ -99,6 +99,7 @@ namespace stm32f407{
         RCC->AHB1ENR = RCC->AHB1ENR | (1 << 8);
     }
 
+    // clock disable
     inline void disableGPIOAClock() {
         RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 0);
     }

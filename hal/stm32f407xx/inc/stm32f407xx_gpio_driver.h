@@ -112,10 +112,11 @@ namespace stm32f407 {
             GPIOHandle(GPIORegDef* gpioRegDef, const GPIOPinConfig& pinConfig): 
                 m_pGPIOx(gpioRegDef), m_pinConfig(pinConfig) {};
             
+            void periClockControl(ClockStatus status);
+            
             void init();
             void deInit();
             
-            void periClockControl(ClockStatus status);
 
             uint8_t readFromInputPin();
             uint16_t readFromInputPort();

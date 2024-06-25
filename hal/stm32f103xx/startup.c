@@ -16,7 +16,7 @@ extern uint32_t uwTick;
 
 int main(void); 
 
-__attribute__((weak, alias("Default_Handler"))) void Reset_Handler(void);
+void Reset_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void NMI_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void HardFault_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void MemManage_Handler(void);
@@ -90,7 +90,7 @@ __attribute__((weak, alias("Default_Handler"))) void DMA2_Channel4_5_IRQHandler(
 /* Vector Table for STM32F103V8 */
 const uint32_t vectorTable[] __attribute__((section(".isr_vector"))) = {
     STACK_START,                  /* Stack pointer */
-    (uint32_t) Reset_Handler,     /* Reset handler */
+    (uint32_t) &Reset_Handler,     /* Reset handler */
     (uint32_t) NMI_Handler,       /* NMI handler */
     (uint32_t) HardFault_Handler, /* Hard fault handler */
     (uint32_t) MemManage_Handler, /* MPU fault handler */
