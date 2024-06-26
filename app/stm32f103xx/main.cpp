@@ -15,6 +15,15 @@ int main() {
 
     GPIOHandle ledRedGPIOHandle(GPIOE, ledRedPinConfig);
 
+    GPIOPinConfig ledGreenPinConfig(
+        GPIOPinNumber::PIN1,
+        GPIOPinMode::OUTPUT_10MHZ,
+        GPIOPinIOConfig::OUTPUT_PP
+    
+    );
+
+    GPIOHandle ledGreenGPIOHandle(GPIOE, ledGreenPinConfig);
+
     GPIOPinConfig led1PinConfig(
         GPIOPinNumber::PIN8,
         GPIOPinMode::OUTPUT_10MHZ,
@@ -23,10 +32,12 @@ int main() {
 
     GPIOHandle led1GPIOHandle(GPIOE, led1PinConfig);
 
-    ledRedGPIOHandle.init();    
+    ledRedGPIOHandle.init();
+    ledGreenGPIOHandle.init();    
     led1GPIOHandle.init();
 
     ledRedGPIOHandle.writeToOutputPin(GPIOPinState::SET);
+    ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::SET);
 
     while (1)
     {

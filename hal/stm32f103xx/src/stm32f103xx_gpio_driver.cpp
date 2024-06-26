@@ -124,9 +124,9 @@ uint16_t GPIOHandle::readFromInputPort() {
  */
 void GPIOHandle::writeToOutputPin(GPIOPinState pinState) {
     if (pinState == GPIOPinState::CLEAR) {
-        m_pGPIOx->ODR = m_pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        m_pGPIOx->BSRR = m_pGPIOx->BSRR | (0x1 << (static_cast<uint8_t>(m_pinConfig.m_pinNumber)));
     } else if (pinState == GPIOPinState::SET) {
-        m_pGPIOx->ODR = m_pGPIOx->ODR | (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        
     }
 }
 

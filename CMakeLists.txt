@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
+set(CMAKE_COLOR_MAKEFILE OFF)
 
 # Set this variable to match the MCU you are working with. 
 # At this point, it needs to match the dir name where the HAL is defined.
@@ -65,3 +66,8 @@ message(STATUS "Compile options for ${EXECUTABLE}: ${EXECUTABLE_COMPILE_OPTIONS}
 
 get_target_property(EXECUTABLE_LINK_OPTIONS ${EXECUTABLE} LINK_OPTIONS)
 message(STATUS "Link options for ${EXECUTABLE}: ${EXECUTABLE_LINK_OPTIONS}")
+
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+        COMMAND ${CMAKE_SIZE_UTIL} $<TARGET_FILE:${EXECUTABLE}>
+        COMMENT "Printing size of the executable ${EXECUTABLE}"
+)
