@@ -34363,6 +34363,384 @@
           }
         }
       ]
+    },
+    {
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 10
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 11
+            },
+            "agent": {
+              "extensionId": {
+                "value": "GitHub.copilot-chat",
+                "_lower": "github.copilot-chat"
+              },
+              "publisherDisplayName": "GitHub",
+              "extensionPublisherId": "GitHub",
+              "extensionDisplayName": "GitHub Copilot Chat",
+              "id": "github.copilot.workspace",
+              "description": "Ask about your workspace",
+              "metadata": {
+                "sampleRequest": "How do I build this project?",
+                "themeIcon": {
+                  "id": "code"
+                },
+                "hasFollowups": true,
+                "isSecondary": true,
+                "supportIssueReporting": false
+              },
+              "name": "workspace",
+              "fullName": "Workspace",
+              "locations": [
+                "panel"
+              ],
+              "slashCommands": [
+                {
+                  "name": "explain",
+                  "description": "Explain how the code in your active editor works"
+                },
+                {
+                  "name": "tests",
+                  "description": "Generate unit tests for the selected code"
+                },
+                {
+                  "name": "fix",
+                  "description": "Propose a fix for the problems in the selected code",
+                  "sampleRequest": "There is a problem in this code. Rewrite the code to show it with the bug fixed."
+                },
+                {
+                  "name": "new",
+                  "description": "Scaffold code for a new workspace",
+                  "sampleRequest": "Create a RESTful API server using typescript",
+                  "isSticky": true
+                },
+                {
+                  "name": "newNotebook",
+                  "description": "Create a new Jupyter Notebook",
+                  "sampleRequest": "How do I create a notebook to load data from a csv file?"
+                }
+              ]
+            },
+            "kind": "agent"
+          },
+          {
+            "range": {
+              "start": 10,
+              "endExclusive": 11
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 11,
+              "endLineNumber": 1,
+              "endColumn": 12
+            },
+            "text": " ",
+            "kind": "text"
+          },
+          {
+            "range": {
+              "start": 11,
+              "endExclusive": 19
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 12,
+              "endLineNumber": 1,
+              "endColumn": 20
+            },
+            "command": {
+              "name": "explain",
+              "description": "Explain how the code in your active editor works"
+            },
+            "kind": "subcommand"
+          },
+          {
+            "range": {
+              "start": 19,
+              "endExclusive": 563
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 20,
+              "endLineNumber": 21,
+              "endColumn": 1
+            },
+            "text": " Write an explanation for the active selection as paragraphs of text.\n\n```cpp\nbool NumberFromHexString(const std::string_view Input, uint8_t *Numbers, size_t Count) {\n    if ((Count * 2) > Input.size()) {\n        return false;\n    }\n    size_t x = 0;\n    for (x = 0; x < Count * 2; x += 2) {\n        uint8_t vh = 0;\n        uint8_t vl = 0;\n        if (!ParseHexNibble(Input[x], vh)) return false;\n        if (!ParseHexNibble(Input[x + 1], vl)) return false;\n        *Numbers = ((vh << 4) | vl);\n        Numbers++;\n    }\n    return true;\n}\n```\n\n",
+            "kind": "text"
+          }
+        ],
+        "text": "@workspace /explain Write an explanation for the active selection as paragraphs of text.\n\n```cpp\nbool NumberFromHexString(const std::string_view Input, uint8_t *Numbers, size_t Count) {\n    if ((Count * 2) > Input.size()) {\n        return false;\n    }\n    size_t x = 0;\n    for (x = 0; x < Count * 2; x += 2) {\n        uint8_t vh = 0;\n        uint8_t vl = 0;\n        if (!ParseHexNibble(Input[x], vh)) return false;\n        if (!ParseHexNibble(Input[x + 1], vl)) return false;\n        *Numbers = ((vh << 4) | vl);\n        Numbers++;\n    }\n    return true;\n}\n```\n\n"
+      },
+      "variableData": {
+        "variables": []
+      },
+      "response": [
+        {
+          "value": "The function `NumberFromHexString` is designed to convert a string of hexadecimal characters into an array of `uint8_t` numbers. It takes three parameters: a `std::string_view` named `Input` representing the hexadecimal string to be parsed, a pointer to a `uint8_t` array named `Numbers` where the parsed numbers will be stored, and a `size_t` named `Count` indicating the number of bytes (or `uint8_t` numbers) to be parsed from the input string.\n\nThe function starts by checking if the input string has enough characters to represent the requested number of bytes. Since each byte is represented by two hexadecimal characters, the function checks if the input string's size is at least twice the `Count` value. If not, the function returns `false`, indicating that the input string does not contain enough data to fulfill the request.\n\nNext, the function enters a loop that iterates over the input string two characters at a time. This is because each pair of hexadecimal characters represents one byte (or one `uint8_t` number). Within the loop, two temporary variables, `vh` and `vl`, are declared to hold the numerical values of the high and low nibbles (4 bits) of each byte, respectively.\n\nThe function then calls `ParseHexNibble` twice for each pair of characters: once for the high nibble (`vh`) and once for the low nibble (`vl`). The `ParseHexNibble` function is assumed to parse a single hexadecimal character and store its numerical value in the provided `uint8_t` reference. If `ParseHexNibble` returns `false` for either character, indicating a parsing failure (e.g., the character is not a valid hexadecimal digit), `NumberFromHexString` immediately returns `false`, signaling that the conversion process has failed.\n\nIf both characters are successfully parsed, the function combines the high and low nibbles into a full byte using bitwise operations. The high nibble `vh` is shifted left by 4 bits (`vh << 4`) to its correct position in the byte, and then the low nibble `vl` is combined with it using the bitwise OR operation (`|`). This byte is then stored in the location pointed to by `Numbers`.\n\nAfter storing the byte, the `Numbers` pointer is incremented to move to the next position in the output array, preparing it for the next byte to be stored. This process repeats until all requested bytes (`Count`) have been parsed and stored.\n\nFinally, if the function successfully parses and stores all requested bytes without encountering any errors, it returns `true`, indicating success.\n\nThis function is useful in contexts where hexadecimal strings need to be converted into their binary representations, such as when processing hexadecimal-encoded data from network communications, configuration files, or user input.",
+          "isTrusted": {
+            "enabledCommands": [
+              "_github.copilot.openRelativePath",
+              "_github.copilot.openSymbolInFile",
+              "_github.copilot.openSymbolFromReferences"
+            ]
+          },
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "result": {
+        "timings": {
+          "firstProgress": 1905,
+          "totalElapsed": 23518
+        },
+        "metadata": {
+          "responseId": "52aa21e2-0c0f-4298-b874-0feacc1999b3",
+          "sessionId": "e6c51c8b-ff91-4253-9bd4-3363d3e8f8d4",
+          "agentId": "github.copilot.workspace",
+          "command": "explain"
+        }
+      },
+      "followups": [
+        {
+          "kind": "reply",
+          "agentId": "github.copilot.workspace",
+          "subCommand": "explain",
+          "message": "What is the difference between `std::is_base_of` and `std::is_base_of_v`?"
+        }
+      ],
+      "isCanceled": false,
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.workspace",
+        "description": "Ask about your workspace",
+        "metadata": {
+          "sampleRequest": "How do I build this project?",
+          "themeIcon": {
+            "id": "code"
+          },
+          "hasFollowups": true,
+          "isSecondary": true,
+          "supportIssueReporting": false
+        },
+        "name": "workspace",
+        "fullName": "Workspace",
+        "locations": [
+          "panel"
+        ],
+        "slashCommands": [
+          {
+            "name": "explain",
+            "description": "Explain how the code in your active editor works"
+          },
+          {
+            "name": "tests",
+            "description": "Generate unit tests for the selected code"
+          },
+          {
+            "name": "fix",
+            "description": "Propose a fix for the problems in the selected code",
+            "sampleRequest": "There is a problem in this code. Rewrite the code to show it with the bug fixed."
+          },
+          {
+            "name": "new",
+            "description": "Scaffold code for a new workspace",
+            "sampleRequest": "Create a RESTful API server using typescript",
+            "isSticky": true
+          },
+          {
+            "name": "newNotebook",
+            "description": "Create a new Jupyter Notebook",
+            "sampleRequest": "How do I create a notebook to load data from a csv file?"
+          }
+        ]
+      },
+      "slashCommand": {
+        "name": "explain",
+        "description": "Explain how the code in your active editor works"
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "uri": {
+              "$mid": 1,
+              "fsPath": "c:\\Learning\\embedded\\cpp_embedded_stm32_project\\resourceshell\\Parser.cpp",
+              "_sep": 1,
+              "external": "file:///c%3A/Learning/embedded/cpp_embedded_stm32_project/resourceshell/Parser.cpp",
+              "path": "/c:/Learning/embedded/cpp_embedded_stm32_project/resourceshell/Parser.cpp",
+              "scheme": "file"
+            },
+            "range": {
+              "startLineNumber": 6,
+              "startColumn": 1,
+              "endLineNumber": 21,
+              "endColumn": 6
+            }
+          }
+        }
+      ]
+    },
+    {
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 41
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 42
+            },
+            "text": "explain the highlighted code line by line",
+            "kind": "text"
+          }
+        ],
+        "text": "explain the highlighted code line by line"
+      },
+      "variableData": {
+        "variables": []
+      },
+      "response": [
+        {
+          "value": "The provided code snippet is from a C++ function named `NumberFromHexString`, which converts a hexadecimal string into an array of `uint8_t` numbers. Here's an explanation of each line:\n\n1. **Function Signature**: `bool NumberFromHexString(const std::string_view Input, uint8_t *Numbers, size_t Count) {`\n   - This line defines a function named `NumberFromHexString` that returns a `bool` indicating success (`true`) or failure (`false`). It takes three parameters:\n     - `const std::string_view Input`: A view into a string representing the hexadecimal input. `std::string_view` is a lightweight, non-owning reference to a string.\n     - `uint8_t *Numbers`: A pointer to an array where the parsed numbers will be stored.\n     - `size_t Count`: The number of `uint8_t` numbers to parse from the input string.\n\n2. **Check Input Length**: `if ((Count * 2) > Input.size()) { return false; }`\n   - This line checks if the input string has enough characters to represent the requested number of bytes. Since each byte is represented by two hexadecimal characters, it multiplies [`Count`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A5%2C%22character%22%3A84%7D%5D \"resourceshell/Parser.cpp\") by 2 and compares it to the size of the input string. If the input string is too short, it returns `false`.\n\n3. **Loop Initialization**: [`size_t x = 0;`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A10%2C%22character%22%3A15%7D%5D \"resourceshell/Parser.cpp\")\n   - Declares and initializes a variable [`x`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A10%2C%22character%22%3A15%7D%5D \"resourceshell/Parser.cpp\") to `0`. This variable will be used as an index to iterate over the input string.\n\n4. **Loop to Process Input**: `for (x = 0; x < Count * 2; x += 2) {`\n   - This `for` loop iterates over the input string, two characters at a time, until it processes the number of characters corresponding to the requested [`Count`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A5%2C%22character%22%3A84%7D%5D \"resourceshell/Parser.cpp\") of bytes. The loop increments [`x`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A10%2C%22character%22%3A15%7D%5D \"resourceshell/Parser.cpp\") by 2 on each iteration to move to the next pair of hexadecimal characters.\n\n5. **Temporary Variables for Nibbles**: [`uint8_t vh = 0; uint8_t vl = 0;`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A12%2C%22character%22%3A20%7D%5D \"resourceshell/Parser.cpp\")\n   - Inside the loop, two `uint8_t` variables, [`vh`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A12%2C%22character%22%3A20%7D%5D \"resourceshell/Parser.cpp\") and [`vl`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A13%2C%22character%22%3A20%7D%5D \"resourceshell/Parser.cpp\"), are declared and initialized to `0`. These will hold the numerical values of the high and low nibbles (4 bits each) of each byte.\n\n6. **Parse High Nibble**: `if (!ParseHexNibble(Input[x], vh)) return false;`\n   - Calls the [`ParseHexNibble`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A3%2C%22character%22%3A16%7D%5D \"resourceshell/Parser.cpp\") function to parse the high nibble (the first character of the current pair) from the input string and store its value in [`vh`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A12%2C%22character%22%3A20%7D%5D \"resourceshell/Parser.cpp\"). If parsing fails (indicated by [`ParseHexNibble`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A3%2C%22character%22%3A16%7D%5D \"resourceshell/Parser.cpp\") returning `false`), the function immediately returns `false`.\n\n7. **Parse Low Nibble**: `if (!ParseHexNibble(Input[x + 1], vl)) return false;`\n   - Similar to the previous line, but this time it parses the low nibble (the second character of the current pair) and stores its value in [`vl`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A13%2C%22character%22%3A20%7D%5D \"resourceshell/Parser.cpp\"). Again, if parsing fails, the function returns `false`.\n\n8. **Combine Nibbles and Store**: `*Numbers = ((vh << 4) | vl);`\n   - This line combines the high and low nibbles into a full byte. It shifts [`vh`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A12%2C%22character%22%3A20%7D%5D \"resourceshell/Parser.cpp\") left by 4 bits (to make it the high nibble) and then uses the bitwise OR operation (`|`) to combine it with [`vl`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A13%2C%22character%22%3A20%7D%5D \"resourceshell/Parser.cpp\") (the low nibble). The result is stored in the location pointed to by [`Numbers`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A5%2C%22character%22%3A68%7D%5D \"resourceshell/Parser.cpp\").\n\n9. **Advance Pointer**: [`Numbers++;`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A5%2C%22character%22%3A68%7D%5D \"resourceshell/Parser.cpp\")\n   - Increments the [`Numbers`](command:_github.copilot.openSymbolFromReferences?%5B%7B%22%24mid%22%3A1%2C%22path%22%3A%22%2Fc%3A%2FLearning%2Fembedded%2Fcpp_embedded_stm32_project%2Fresourceshell%2FParser.cpp%22%2C%22scheme%22%3A%22file%22%7D%2C%7B%22line%22%3A5%2C%22character%22%3A68%7D%5D \"resourceshell/Parser.cpp\") pointer to move to the next position in the output array, preparing it for the next byte to be stored.\n\n10. **Return Success**: `return true;`\n    - After successfully parsing and storing all requested bytes, the function returns `true`, indicating success.\n\nThis function efficiently parses a hexadecimal string into an array of bytes, checking for errors and ensuring that the input string contains enough characters to represent the requested number of bytes.",
+          "isTrusted": {
+            "enabledCommands": [
+              "_github.copilot.openRelativePath",
+              "_github.copilot.openSymbolInFile",
+              "_github.copilot.openSymbolFromReferences"
+            ]
+          },
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "result": {
+        "timings": {
+          "firstProgress": 2324,
+          "totalElapsed": 29815
+        },
+        "metadata": {
+          "responseId": "6aadb08d-e412-4bd4-815e-febcac815e99",
+          "sessionId": "89f0ce1f-1147-40d7-9293-09d8cf8d2b78",
+          "agentId": "github.copilot.default"
+        }
+      },
+      "followups": [
+        {
+          "kind": "reply",
+          "agentId": "github.copilot.default",
+          "message": "What are some common use cases for the Boost library in C++ development?"
+        }
+      ],
+      "isCanceled": false,
+      "agent": {
+        "b": {
+          "extensionId": {
+            "value": "GitHub.copilot-chat",
+            "_lower": "github.copilot-chat"
+          },
+          "publisherDisplayName": "GitHub",
+          "extensionPublisherId": "GitHub",
+          "extensionDisplayName": "GitHub Copilot Chat",
+          "id": "github.copilot.default",
+          "description": "Ask Copilot or type / for commands",
+          "metadata": {
+            "themeIcon": {
+              "id": "copilot"
+            },
+            "hasFollowups": true,
+            "helpTextPrefix": "You can ask me general programming questions, or chat with the following participants which have specialized expertise and can perform actions:",
+            "helpTextVariablesPrefix": "You can also help me understand your question by using the following variables to give me extra context:",
+            "helpTextPostfix": {
+              "value": "To have a great conversation, ask me questions as if I was a real programmer:\n\n* **Show me the code** you want to talk about by having the files open and selecting the most important lines.\n* **Make refinements** by asking me follow-up questions, adding clarifications, providing errors, etc.\n* **Review my suggested code** and tell me about issues or improvements, so I can iterate on it.\n\nYou can also ask me questions about your editor selection by [starting an inline chat session](command:inlineChat.start).\n\nLearn more about [GitHub Copilot](https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted) in [Visual Studio Code](https://code.visualstudio.com/docs/copilot/overview).",
+              "isTrusted": {
+                "enabledCommands": [
+                  "inlineChat.start"
+                ]
+              },
+              "supportThemeIcons": false,
+              "supportHtml": false,
+              "uris": {
+                "command:inlineChat.start": {
+                  "$mid": 1,
+                  "path": "inlineChat.start",
+                  "scheme": "command"
+                },
+                "https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted": {
+                  "$mid": 1,
+                  "path": "/copilot/using-github-copilot/getting-started-with-github-copilot",
+                  "scheme": "https",
+                  "authority": "docs.github.com",
+                  "query": "tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted"
+                },
+                "https://code.visualstudio.com/docs/copilot/overview": {
+                  "$mid": 1,
+                  "path": "/docs/copilot/overview",
+                  "scheme": "https",
+                  "authority": "code.visualstudio.com"
+                }
+              }
+            },
+            "supportIssueReporting": false,
+            "supportsSlowVariables": true,
+            "requester": {
+              "name": "arcrin",
+              "icon": {
+                "$mid": 1,
+                "path": "/arcrin",
+                "scheme": "https",
+                "authority": "avatars.githubusercontent.com"
+              }
+            }
+          },
+          "name": "GitHubCopilot",
+          "fullName": "GitHub Copilot",
+          "isDefault": true,
+          "locations": [
+            "panel"
+          ],
+          "slashCommands": []
+        },
+        "d": {}
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "uri": {
+              "$mid": 1,
+              "fsPath": "c:\\Learning\\embedded\\cpp_embedded_stm32_project\\resourceshell\\Parser.cpp",
+              "_sep": 1,
+              "external": "file:///c%3A/Learning/embedded/cpp_embedded_stm32_project/resourceshell/Parser.cpp",
+              "path": "/c:/Learning/embedded/cpp_embedded_stm32_project/resourceshell/Parser.cpp",
+              "scheme": "file"
+            },
+            "range": {
+              "startLineNumber": 6,
+              "startColumn": 1,
+              "endLineNumber": 21,
+              "endColumn": 6
+            }
+          }
+        }
+      ]
     }
   ]
 }

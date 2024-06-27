@@ -1,7 +1,7 @@
 #include "Parser.h"
 
 namespace Parser {
-    static bool ParseHexNibble(char c, uint8_t);
+    static bool ParseHexNibble(char c, uint8_t &Number);
 
     bool NumberFromHexString(const std::string_view Input, uint8_t *Numbers, size_t Count) {
         if ((Count * 2) > Input.size()) {
@@ -18,6 +18,54 @@ namespace Parser {
             Numbers++;
         }
         return true;
+    }
+
+    void HexStringFromNumbers(const void* Numbers, uint32_t Length, boost::static_string<RESOURCE_SHELL_OUTPUT_SIZE> &Output, bool Reverse) {
+        constexpr char hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+        auto *Ptr = static_cast<const uint8_t*>(Numbers);
+
+        if (Reverse) {
+            for (int32_t i = Length - 1; i >= 0; i--) {
+                Output += hex[Ptr[i] >> 4];
+                Output += hex[Ptr[i] & 0x0F];
+            } 
+            
+        } else {
+            for (uint32_t i = 0; i < Length; i++) {
+                Output += hex[Ptr[i] >> 4];
+                Output += hex[Ptr[i] & 0x0F];   
+            }
+        }
+    }
+
+    void DesStringFromNumber(int32_t Number, boost::static_string <RESOURCE_SHELL_OUTPUT_SIZE> &Output, uint8_t DecimalPlace) {
+        char symbols[20];
+        uint8_t index = 0;
+        if (Number < 0) {
+            Output += '-';
+            Number *= -1;
+        }
+
+        if (DecimalPlace) {
+            DecimalPlace++;
+        }
+
+        while (Number || index == 0 || DecimalPlace) {
+            if (DecimalPlace) {
+                DecimalPlace--;
+                if (!DecimalPlace) {
+                    symbols[index++] = '.';
+                }
+            }
+
+            symbols[index++] = (char)('0' + (Number % 10));
+            Number /= 10;
+        }
+
+        while (index--) {
+            Output += symbols[index];
+        }
     }
 
     static bool ParseHexNubble(const char c, uint8_t &Number) {
@@ -46,5 +94,56 @@ namespace Parser {
 			case 'F': Number = 15; return true;
             default: return false;
         }
+    }
+
+    bool InternalNumberFromString(std::string_view Input, int32_t &Number) {
+        bool is_hex = false;
+        bool is_neg = false;
+        size_t len = Input.size();
+        Number = 0;
+        const char * ptr = Input.data();
+
+        if (!len) {
+            return false;
+        }
+
+        switch (*ptr) {
+            case 0:
+                return false;
+            case '-':
+                is_neg = true;
+                ptr++;
+                len--;
+                break;  
+            case '0':
+                if (len > 1) {
+                    is_hex = true;
+                    ptr += 2;
+                    len -= 2;
+                }
+                break;
+            default:
+                break;
+        }
+
+        uint8_t v;
+        while (len && (v = *ptr)) {
+            if (is_hex) {
+                if (!ParseHexNibble(v, v)) return false;
+                Number = (Number << 4) | v;
+            } else {
+                if (v < '0') return false;
+                v -= '0';
+                if (v > 9) return false;
+
+                Number = (Number * 10) + v; 
+            }
+            ptr++;
+            len--;
+        }
+        if (is_neg) {
+            Number = -Number;
+        }
+        return true;
     }
 }
