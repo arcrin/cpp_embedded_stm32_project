@@ -36,7 +36,7 @@ int main() {
     ledGreenGPIOHandle.init();    
     led1GPIOHandle.init();
 
-    ledRedGPIOHandle.writeToOutputPin(GPIOPinState::SET);
+    ledRedGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
     ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::SET);
 
     while (1)
