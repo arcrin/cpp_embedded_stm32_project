@@ -196,3 +196,23 @@ void GPIOHandle::writeOutputPort(uint16_t value) {
 void GPIOHandle::toggleOutputPin() {
     m_pGPIOx->ODR = m_pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
 }
+
+static void irqConfig(uint8_t IRQNumber, bool enable) {
+    if (enable) {
+        if (IRQNumber <= 31) {
+            NVIC->ISER[0] = NVIC->ISER[0] | (0x1 << IRQNumber);
+        } else if (IRQNumber > 31 && IRQNumber < 64) {
+            NVIC->ISER[1] = NVIC->ISER[1] | (0x1 << (IRQNumber % 32));
+        } else if (IRQNumber >= 64 && IRQNumber < 96) {
+            NVIC->ISER[2] = NVIC->ISER[2] | (0x1 << (IRQNumber % 64));
+        }
+    } else {
+        if (IRQNumber <= 31) {
+            NVIC->ICER[0] = NVIC->ICER[0] | (0x1 << IRQNumber);
+        } else if (IRQNumber > 31 && IRQNumber < 64) {
+            NVIC->ICER[1] = NVIC->ICER[1] | (0x1 << (IRQNumber % 32));
+        } else if (IRQNumber >= 64 && IRQNumber < 96) {
+            NVIC->ICER[2] = NVIC->ICER[2] | (0x1 << (IRQNumber % 64));
+        }
+    }
+}

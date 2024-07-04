@@ -41,6 +41,9 @@ namespace stm32f407{
         volatile uint32_t STIR;
     };
 
+    inline NVICRegDef* NVIC = reinterpret_cast<NVICRegDef*>(0xE000E100U);
+
+    void NVICSetPriority(int8_t IRQn, uint8_t priority);
 
     /*
      * RCC register structure
