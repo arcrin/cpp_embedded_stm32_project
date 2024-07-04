@@ -5,7 +5,7 @@
 
 namespace stm32f407 {
 
-        enum class GPIOPinNumber : uint8_t {
+    enum class GPIOPinNumber : uint8_t {
         PIN0,
         PIN1,
         PIN2,
