@@ -484,5 +484,6 @@ namespace stm32f407{
 
 
 #include "stm32f407xx_gpio_driver.h"
+#include "stm32f407xx_usart_driver.h"
 
 
