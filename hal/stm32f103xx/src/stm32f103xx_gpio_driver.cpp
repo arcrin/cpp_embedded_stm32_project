@@ -100,8 +100,8 @@ void GPIOHandle::deInit() {
  *
  * @return The input value of the GPIO pin (0 or 1).
  */
-uint8_t GPIOHandle::readFromInputPin() {
-    return (m_pGPIOx->IDR & (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber)) >> static_cast<uint8_t>(m_pinConfig.m_pinNumber)); 
+uint8_t GPIOHandle::readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
+    return (pGPIOx->IDR & (1 << static_cast<uint8_t>(pinNumber)) >> static_cast<uint8_t>(pinNumber));
 }
 
 /**
@@ -109,8 +109,8 @@ uint8_t GPIOHandle::readFromInputPin() {
  *
  * @return The input data from the GPIO port.
  */
-uint16_t GPIOHandle::readFromInputPort() {
-    return m_pGPIOx->IDR;
+uint16_t GPIOHandle::readFromInputPort(GPIORegDef* pGPIOx) {
+    return (uint16_t) pGPIOx->IDR;
 }
 
 /**
@@ -122,11 +122,11 @@ uint16_t GPIOHandle::readFromInputPort() {
  *                 - `GPIOPinState::CLEAR` to clear the pin (set it to low).
  *                 - `GPIOPinState::SET` to set the pin (set it to high).
  */
-void GPIOHandle::writeToOutputPin(GPIOPinState pinState) {
-    if (pinState == GPIOPinState::SET) {
-        m_pGPIOx->BSRR = m_pGPIOx->BSRR | (0x1 << (static_cast<uint8_t>(m_pinConfig.m_pinNumber)));
-    } else if (pinState == GPIOPinState::CLEAR) {
-        m_pGPIOx->BSRR = m_pGPIOx->BSRR | (0x1 << (static_cast<uint8_t>(m_pinConfig.m_pinNumber) + 16));
+void GPIOHandle::writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState) {
+    if (pinState == GPIOPinState::CLEAR) {
+        pGPIOx->ODR = pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(pinNumber));
+    } else {
+        pGPIOx->ODR = pGPIOx->ODR | (0x1 << static_cast<uint8_t>(pinNumber));
     }
 }
 
@@ -138,8 +138,8 @@ void GPIOHandle::writeToOutputPin(GPIOPinState pinState) {
  * 
  * @param value The value to be written to the output data register.
  */
-void GPIOHandle::writeOutputPort(uint16_t value) {
-    m_pGPIOx->ODR = value;
+void GPIOHandle::writeOutputPort(GPIORegDef* pGPIOx, uint16_t value) {
+    pGPIOx->ODR = value;
 }
 
 /**
@@ -154,6 +154,6 @@ void GPIOHandle::writeOutputPort(uint16_t value) {
  * @see GPIOHandle::initialize
  * @see GPIOHandle::configurePin
  */
-void GPIOHandle::toggleOutputPin() {
-    m_pGPIOx->ODR = m_pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+void GPIOHandle::toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
+    pGPIOx->ODR = pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(pinNumber));
 }

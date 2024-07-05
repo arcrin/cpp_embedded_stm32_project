@@ -1,6 +1,4 @@
-#ifndef INC_STM32F407XX_H_
-#define INC_STM32F407XX_H_
-
+#pragma once
 #include <cstdint>
 namespace stm32f407{
     enum class ClockStatus
@@ -41,13 +39,70 @@ namespace stm32f407{
         volatile uint32_t STIR;
     };
 
+    enum class NVICIRQNumbers : uint8_t {
+        EXTI0 = 6,
+        EXTI1 = 7,
+        EXTI2 = 8,
+        EXTI3 = 9,
+        EXTI4 = 10,
+        EXTI9_5 = 23,
+        EXTI15_10 = 40
+    };
+
+    const uint8_t NVIC_PRIORITY_BITS = 4U;
+
+
     inline NVICRegDef* NVIC = reinterpret_cast<NVICRegDef*>(0xE000E100U);
 
-    void NVICSetPriority(int8_t IRQn, uint8_t priority);
 
-    /*
+    inline void nvicEnableIRQ(NVICIRQNumbers irqNumber){
+        if (static_cast<uint8_t>(irqNumber) <= 32) {
+            NVIC->ISER[0] = NVIC->ISER[0] | (1 << static_cast<uint8_t>(irqNumber));
+        } else if (static_cast<uint8_t>(irqNumber) > 32 && static_cast<uint8_t>(irqNumber) <= 64) {
+            NVIC->ISER[1] = NVIC->ISER[1] | (1 << (static_cast<uint8_t>(irqNumber) % 32));
+        } else if (static_cast<uint8_t>(irqNumber) > 64 && static_cast<uint8_t>(irqNumber) <= 96) {
+            NVIC->ISER[2] = NVIC->ISER[2] | (1 << (static_cast<uint8_t>(irqNumber) % 64));
+        }
+    }
+
+    inline void nvicDisableIRQ(NVICIRQNumbers irqNumber) {
+        if (static_cast<uint8_t>(irqNumber) <= 32) {
+            NVIC->ICER[0] = NVIC->ICER[0] | (1 << static_cast<uint8_t>(irqNumber));
+        } else if (static_cast<uint8_t>(irqNumber) > 32 && static_cast<uint8_t>(irqNumber) <= 64) {
+            NVIC->ICER[1] = NVIC->ICER[1] | (1 << (static_cast<uint8_t>(irqNumber) % 32));
+        } else if (static_cast<uint8_t>(irqNumber) > 64 && static_cast<uint8_t>(irqNumber) <= 96) {
+            NVIC->ICER[2] = NVIC->ICER[2] | (1 << (static_cast<uint8_t>(irqNumber) % 64));
+        }
+    }
+
+    inline void nvicSetPriority(NVICIRQNumbers irqNumber, uint8_t priority) {
+        NVIC->IPR[static_cast<uint8_t>(irqNumber)] = priority << NVIC_PRIORITY_BITS;
+    }
+
+
+
+    /***************************************************************
+     * EXTI
+     ***************************************************************/
+    struct EXTIRegDef {
+        volatile uint32_t IMR;
+        volatile uint32_t EMR;
+        volatile uint32_t RTSR;
+        volatile uint32_t FTSR;
+        volatile uint32_t SWIER;
+        volatile uint32_t PR;
+    };
+
+    inline EXTIRegDef* EXTI = reinterpret_cast<EXTIRegDef*>(0x40013C00U);
+
+
+
+
+
+
+    /****************************************************************
      * RCC register structure
-     */
+     ****************************************************************/
     struct RCCRegDef {
         volatile uint32_t CR;
         volatile uint32_t PLLCFGR;
@@ -56,24 +111,24 @@ namespace stm32f407{
         volatile uint32_t AHB1RSTR;
         volatile uint32_t AHB2RSTR;
         volatile uint32_t AHB3RSTR;
-        uint32_t Reserved1;
+                 uint32_t Reserved1;
         volatile uint32_t APB1RSTR;
         volatile uint32_t APB2RSTR;
-        uint32_t Reserved2[2];
+                 uint32_t Reserved2[2];
         volatile uint32_t AHB1ENR;
         volatile uint32_t AHB2ENR;
         volatile uint32_t AHB3ENR;
-        uint32_t Reserved3;
+                 uint32_t Reserved3;
         volatile uint32_t APB1ENR;
         volatile uint32_t APB2ENR;
-        uint32_t Reserved4[2];
+                 uint32_t Reserved4[2];
         volatile uint32_t AHB1LPENR;
         volatile uint32_t AHB2LPENR;
         volatile uint32_t AHB3LPENR;
-        uint32_t Reserved5;
+                 uint32_t Reserved5;
         volatile uint32_t APB1LPENR;
         volatile uint32_t APB2LPENR;
-        uint32_t Reserved6[2];
+                 uint32_t Reserved6[2];
     };
 
     constexpr uint32_t RCC_BASEADDR = (AHB1PERIPH_BASEADDR + 0x3800U);
@@ -160,6 +215,27 @@ namespace stm32f407{
         RCC->AHB1ENR = RCC->AHB1ENR & ~(1 << 8);
     }
 
+    /****************************************************************
+     * SYSCFG register structure
+     ****************************************************************/
+    struct SYSCFGRegDef {
+        volatile uint32_t MEMRMP;
+        volatile uint32_t PMC;
+        volatile uint32_t EXTICR[4];
+                 uint32_t Reserved1[2];
+        volatile uint32_t CMPCR;
+    };
+
+    inline SYSCFGRegDef* SYSCFG = reinterpret_cast<SYSCFGRegDef*>(0x40013800U);
+
+    inline void enableSYSCFGClock() {
+        RCC->APB2ENR = RCC->APB2ENR | (1 << 14);
+    }
+
+    inline void disableSYSCFGClock() {
+        RCC->APB2ENR = RCC->APB2ENR & ~(1 << 14);
+    }   
+
 
     /*
      * GPIO register definition structure
@@ -179,15 +255,15 @@ namespace stm32f407{
     /*
      * GPIO base addresses
      */
-    constexpr uint32_t GPIOA_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0000U);
-    constexpr uint32_t GPIOB_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0400U);
-    constexpr uint32_t GPIOC_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0800U);
-    constexpr uint32_t GPIOD_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0C00U);
-    constexpr uint32_t GPIOE_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1000U);
-    constexpr uint32_t GPIOF_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1400U);
-    constexpr uint32_t GPIOG_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1800U);
-    constexpr uint32_t GPIOH_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1C00U);
-    constexpr uint32_t GPIOI_BASEADDR = (AHB1PERIPH_BASEADDR + 0x2000U);
+    const uint32_t GPIOA_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0000U);
+    const uint32_t GPIOB_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0400U);
+    const uint32_t GPIOC_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0800U);
+    const uint32_t GPIOD_BASEADDR = (AHB1PERIPH_BASEADDR + 0x0C00U);
+    const uint32_t GPIOE_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1000U);
+    const uint32_t GPIOF_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1400U);
+    const uint32_t GPIOG_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1800U);
+    const uint32_t GPIOH_BASEADDR = (AHB1PERIPH_BASEADDR + 0x1C00U);
+    const uint32_t GPIOI_BASEADDR = (AHB1PERIPH_BASEADDR + 0x2000U);
 
     inline GPIORegDef* GPIOA = reinterpret_cast<GPIORegDef*>(GPIOA_BASEADDR);
     inline GPIORegDef* GPIOB = reinterpret_cast<GPIORegDef*>(GPIOB_BASEADDR);
@@ -198,6 +274,29 @@ namespace stm32f407{
     inline GPIORegDef* GPIOG = reinterpret_cast<GPIORegDef*>(GPIOG_BASEADDR);
     inline GPIORegDef* GPIOH = reinterpret_cast<GPIORegDef*>(GPIOH_BASEADDR);
     inline GPIORegDef* GPIOI = reinterpret_cast<GPIORegDef*>(GPIOI_BASEADDR);
+
+    inline int8_t getGPIOPortCode(GPIORegDef* pGPIOx) {
+        if (pGPIOx == GPIOA) {
+            return 0;
+        } else if (pGPIOx == GPIOB) {
+            return 1;
+        } else if (pGPIOx == GPIOC) {
+            return 2;
+        } else if (pGPIOx == GPIOD) {
+            return 3;
+        } else if (pGPIOx == GPIOE) {
+            return 4;
+        } else if (pGPIOx == GPIOF) {
+            return 5;
+        } else if (pGPIOx == GPIOG) {
+            return 6;
+        } else if (pGPIOx == GPIOH) {
+            return 7;
+        } else if (pGPIOx == GPIOI) {
+            return 8;
+        } 
+        return -1;
+    }
 
     /*
      * GPIO reset functions
@@ -382,8 +481,8 @@ namespace stm32f407{
     }
 };  // namespace 
 
+
+
 #include "stm32f407xx_gpio_driver.h"
 
 
-
-#endif /* INC_STM32F407XX_H_ */

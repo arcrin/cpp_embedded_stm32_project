@@ -77,7 +77,30 @@ void GPIOHandle::init() {
         m_pGPIOx->MODER = m_pGPIOx->MODER | (static_cast<uint8_t>(m_pinConfig.m_pinMode) << (static_cast<uint8_t>(m_pinConfig.m_pinNumber) * 2));
     }
     else {
-        // interrupt mode (later)
+        if (m_pinConfig.m_pinMode == GPIOPinMode::INPUT_RT) {
+            // Enable rising edge trigger
+            EXTI->RTSR = EXTI->RTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+            // Disable falling edge trigger
+            EXTI->FTSR = EXTI->FTSR & ~(1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        } else if (m_pinConfig.m_pinMode == GPIOPinMode::INPUT_FT) {
+            // Enable falling edge trigger
+            EXTI->FTSR = EXTI->FTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+            // Disable rising edge trigger
+            EXTI->RTSR = EXTI->RTSR & ~(1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        } else if (m_pinConfig.m_pinMode == GPIOPinMode::INPUT_RFT) {
+            // Enable both rising and falling edge triggers
+            EXTI->RTSR = EXTI->RTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+            EXTI->FTSR = EXTI->FTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        }
+        // Route the GPIO port to the EXTI line
+        // TODO: need to find a way to check this at compile time
+        uint8_t portCode = getGPIOPortCode(m_pGPIOx);
+        enableSYSCFGClock();
+        SYSCFG->EXTICR[static_cast<uint8_t>(m_pinConfig.m_pinNumber) / 4] = (portCode << ((static_cast<uint8_t>(m_pinConfig.m_pinNumber) % 4) * 4));
+
+        // Enable the EXTI interrupt
+        EXTI->IMR = EXTI->IMR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+
     }
 
     // 2. Configure the speed
@@ -139,8 +162,8 @@ void GPIOHandle::deInit() {
  *
  * @return The value read from the input pin.
  */
-uint8_t GPIOHandle::readFromInputPin() {
-    return (m_pGPIOx->IDR & (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber)) >> static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+uint8_t GPIOHandle::readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
+    return (pGPIOx->IDR & (1 << static_cast<uint8_t>(pinNumber)) >> static_cast<uint8_t>(pinNumber));
 }
 
 /**
@@ -150,8 +173,8 @@ uint8_t GPIOHandle::readFromInputPin() {
  *
  * @return The input data read from the GPIO port.
  */
-uint16_t GPIOHandle::readFromInputPort() {
-    return (uint16_t) m_pGPIOx->IDR;
+uint16_t GPIOHandle::readFromInputPort(GPIORegDef* pGPIOx) {
+    return (uint16_t) pGPIOx->IDR;
 }
 
 /**
@@ -163,11 +186,11 @@ uint16_t GPIOHandle::readFromInputPort() {
  * 
  * @return None.
  */
-void GPIOHandle::writeToOutputPin(GPIOPinState pinState) {
+void GPIOHandle::writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState) {
     if (pinState == GPIOPinState::CLEAR) {
-        m_pGPIOx->ODR = m_pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        pGPIOx->ODR = pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(pinNumber));
     } else {
-        m_pGPIOx->ODR = m_pGPIOx->ODR | (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        pGPIOx->ODR = pGPIOx->ODR | (0x1 << static_cast<uint8_t>(pinNumber));
     }
 }
 
@@ -179,8 +202,8 @@ void GPIOHandle::writeToOutputPin(GPIOPinState pinState) {
  *
  * @param value The value to be written to the output data register.
  */
-void GPIOHandle::writeOutputPort(uint16_t value) {
-    m_pGPIOx->ODR = value;
+void GPIOHandle::writeOutputPort(GPIORegDef* pGPIOx, uint16_t value) {
+    pGPIOx->ODR = value;
 }
 
 /**
@@ -193,26 +216,6 @@ void GPIOHandle::writeOutputPort(uint16_t value) {
  *
  * @return None.
  */
-void GPIOHandle::toggleOutputPin() {
-    m_pGPIOx->ODR = m_pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
-}
-
-static void irqConfig(uint8_t IRQNumber, bool enable) {
-    if (enable) {
-        if (IRQNumber <= 31) {
-            NVIC->ISER[0] = NVIC->ISER[0] | (0x1 << IRQNumber);
-        } else if (IRQNumber > 31 && IRQNumber < 64) {
-            NVIC->ISER[1] = NVIC->ISER[1] | (0x1 << (IRQNumber % 32));
-        } else if (IRQNumber >= 64 && IRQNumber < 96) {
-            NVIC->ISER[2] = NVIC->ISER[2] | (0x1 << (IRQNumber % 64));
-        }
-    } else {
-        if (IRQNumber <= 31) {
-            NVIC->ICER[0] = NVIC->ICER[0] | (0x1 << IRQNumber);
-        } else if (IRQNumber > 31 && IRQNumber < 64) {
-            NVIC->ICER[1] = NVIC->ICER[1] | (0x1 << (IRQNumber % 32));
-        } else if (IRQNumber >= 64 && IRQNumber < 96) {
-            NVIC->ICER[2] = NVIC->ICER[2] | (0x1 << (IRQNumber % 64));
-        }
-    }
+void GPIOHandle::toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
+    pGPIOx->ODR = pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(pinNumber));
 }

@@ -75,11 +75,14 @@ namespace stm32f103 {
 
             void periClockControl(ClockStatus status); 
 
-            uint8_t readFromInputPin();
-            uint16_t readFromInputPort();
-            void writeToOutputPin(GPIOPinState pinState);
-            void writeOutputPort(uint16_t value);
-            void toggleOutputPin();
+            GPIORegDef* getGPIOx() const { return m_pGPIOx; }
+            GPIOPinNumber getPinNumber() const { return m_pinConfig.m_pinNumber; }
+
+            static uint8_t readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
+            static uint16_t readFromInputPort(GPIORegDef* pGPIOx);
+            static void writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState);
+            static void writeOutputPort(GPIORegDef* pGPIOx, uint16_t value);
+            static void toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
     };
 }
 

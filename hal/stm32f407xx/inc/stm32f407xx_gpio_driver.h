@@ -1,11 +1,11 @@
-#ifndef INC_STM32F407XX_GPIO_DRIVER_H_
-#define INC_STM32F407XX_GPIO_DRIVER_H_
+#pragma once
 
 #include "stm32f407xx.h"
 
 namespace stm32f407 {
+    #define handle_name 
 
-        enum class GPIOPinNumber : uint8_t {
+    enum class GPIOPinNumber : uint8_t {
         PIN0,
         PIN1,
         PIN2,
@@ -25,7 +25,7 @@ namespace stm32f407 {
     };
 
     enum class GPIOPinMode : uint8_t {
-        INPUT = 0,
+        INPUT,
         OUTPUT,
         ALT,
         ANALOG,
@@ -108,9 +108,12 @@ namespace stm32f407 {
             GPIORegDef* m_pGPIOx;
             GPIOPinConfig m_pinConfig;
 
+            static GPIOHandle* s_GPIOHandles[16];
+
         public:
             GPIOHandle(GPIORegDef* gpioRegDef, const GPIOPinConfig& pinConfig): 
-                m_pGPIOx(gpioRegDef), m_pinConfig(pinConfig) {};
+                m_pGPIOx(gpioRegDef), m_pinConfig(pinConfig) {
+            };
             
             void periClockControl(ClockStatus status);
             
@@ -118,16 +121,10 @@ namespace stm32f407 {
             void deInit();
             
 
-            uint8_t readFromInputPin();
-            uint16_t readFromInputPort();
-            void writeToOutputPin(GPIOPinState pinState);
-            void writeOutputPort(uint16_t value);
-            void toggleOutputPin();
-
-            static void irqConfig(uint8_t IRQNumber, bool enable);
-            static void irqPriorityConfig(uint8_t IRQNumber, uint8_t priority);
-            static void irqHandling(uint8_t pinNumber);
+            static uint8_t readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
+            static uint16_t readFromInputPort(GPIORegDef* pGPIOx);
+            static void writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState);
+            static void writeOutputPort(GPIORegDef* pGPIOx, uint16_t value);
+            static void toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
     };
 }
-
-#endif

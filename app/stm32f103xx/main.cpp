@@ -36,13 +36,15 @@ int main() {
     ledGreenGPIOHandle.init();    
     led1GPIOHandle.init();
 
-    ledRedGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
-    ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::SET);
+
+    GPIOHandle::writeToOutputPin(ledRedGPIOHandle.getGPIOx(), ledRedGPIOHandle.getPinNumber(), GPIOPinState::SET);
+    GPIOHandle::writeToOutputPin(ledGreenGPIOHandle.getGPIOx(), ledGreenGPIOHandle.getPinNumber(), GPIOPinState::SET);
+    GPIOHandle::writeToOutputPin(led1GPIOHandle.getGPIOx(), led1GPIOHandle.getPinNumber(), GPIOPinState::CLEAR);
 
     while (1)
     {
-        delay();
-        led1GPIOHandle.toggleOutputPin();
+        // delay();
+        // GPIOHandle::toggleOutputPin(led1GPIOHandle.getGPIOx(), led1GPIOHandle.getPinNumber());
     }
     
 }
