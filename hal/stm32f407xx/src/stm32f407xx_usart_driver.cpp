@@ -66,7 +66,7 @@ void USARTHandle::init() {
         m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_CTSE);
     } else if (m_usartConfig.m_flowControl == USARTFlowControl::RTS) {
         m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_RTSE);
-    } else if (m_usartConfig.m_flowControl == USARTFlowControl::CTS_RTS) {
+    } else if (m_usartConfig.m_flowControl == USARTFlowControl::RTS_CTS) {
         m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_CTSE);
         m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_RTSE);
     }

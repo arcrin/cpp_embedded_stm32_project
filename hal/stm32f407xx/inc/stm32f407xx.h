@@ -19,6 +19,26 @@ namespace stm32f407{
     constexpr uint32_t AHB1PERIPH_BASEADDR = 0x40020000U;
     constexpr uint32_t AHB2PERIPH_BASEADDR = 0x50000000U;
 
+    /****************************************************
+     * SysTick
+     ****************************************************/
+    struct SysTickRegDef {
+        volatile uint32_t CTRL;
+        volatile uint32_t LOAD;
+        volatile uint32_t VAL;
+        volatile uint32_t CALIB; 
+    };
+    
+    inline SysTickRegDef* SysTick = reinterpret_cast<SysTickRegDef*>(0xE000E010U);
+
+    extern volatile uint32_t g_sysTickCounter;
+
+    void SysTickInit(uint32_t load_value);
+
+    uint32_t get_ticks();
+
+    void delay(uint32_t delay_ms);
+
 
     /****************************************************
      * NVIC

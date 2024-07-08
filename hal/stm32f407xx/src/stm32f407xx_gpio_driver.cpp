@@ -162,8 +162,8 @@ void GPIOHandle::deInit() {
  *
  * @return The value read from the input pin.
  */
-uint8_t GPIOHandle::readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
-    return (pGPIOx->IDR & (1 << static_cast<uint8_t>(pinNumber)) >> static_cast<uint8_t>(pinNumber));
+uint8_t GPIOHandle::readFromInputPin() {
+    return (m_pGPIOx->IDR & (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber)) >> static_cast<uint8_t>(m_pinConfig.m_pinNumber));
 }
 
 /**
@@ -173,8 +173,8 @@ uint8_t GPIOHandle::readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber
  *
  * @return The input data read from the GPIO port.
  */
-uint16_t GPIOHandle::readFromInputPort(GPIORegDef* pGPIOx) {
-    return (uint16_t) pGPIOx->IDR;
+uint16_t GPIOHandle::readFromInputPort() {
+    return (uint16_t) m_pGPIOx->IDR;
 }
 
 /**
@@ -186,11 +186,11 @@ uint16_t GPIOHandle::readFromInputPort(GPIORegDef* pGPIOx) {
  * 
  * @return None.
  */
-void GPIOHandle::writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState) {
+void GPIOHandle::writeToOutputPin(GPIOPinState pinState) {
     if (pinState == GPIOPinState::CLEAR) {
-        pGPIOx->ODR = pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(pinNumber));
+        m_pGPIOx->ODR = m_pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
     } else {
-        pGPIOx->ODR = pGPIOx->ODR | (0x1 << static_cast<uint8_t>(pinNumber));
+        m_pGPIOx->ODR = m_pGPIOx->ODR | (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
     }
 }
 
@@ -202,8 +202,8 @@ void GPIOHandle::writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, G
  *
  * @param value The value to be written to the output data register.
  */
-void GPIOHandle::writeOutputPort(GPIORegDef* pGPIOx, uint16_t value) {
-    pGPIOx->ODR = value;
+void GPIOHandle::writeOutputPort(uint16_t value) {
+    m_pGPIOx->ODR = value;
 }
 
 /**
@@ -216,6 +216,6 @@ void GPIOHandle::writeOutputPort(GPIORegDef* pGPIOx, uint16_t value) {
  *
  * @return None.
  */
-void GPIOHandle::toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
-    pGPIOx->ODR = pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(pinNumber));
+void GPIOHandle::toggleOutputPin() {
+    m_pGPIOx->ODR = m_pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
 }

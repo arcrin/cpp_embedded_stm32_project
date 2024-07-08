@@ -88,6 +88,7 @@ namespace stm32f407 {
             volatile GPIOPinOutputType m_pinOPType;
             volatile GPIOPinAltMode m_pinAltMode;
 
+            GPIOPinConfig() = default;
             GPIOPinConfig(
                 GPIOPinNumber pinNumber,
                 GPIOPinMode pinMode, 
@@ -111,6 +112,7 @@ namespace stm32f407 {
             static GPIOHandle* s_GPIOHandles[16];
 
         public:
+            GPIOHandle() = default;
             GPIOHandle(GPIORegDef* gpioRegDef, const GPIOPinConfig& pinConfig): 
                 m_pGPIOx(gpioRegDef), m_pinConfig(pinConfig) {
             };
@@ -121,10 +123,10 @@ namespace stm32f407 {
             void deInit();
             
 
-            static uint8_t readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
-            static uint16_t readFromInputPort(GPIORegDef* pGPIOx);
-            static void writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState);
-            static void writeOutputPort(GPIORegDef* pGPIOx, uint16_t value);
-            static void toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
+            uint8_t readFromInputPin();
+            uint16_t readFromInputPort();
+            void writeToOutputPin(GPIOPinState pinState);
+            void writeOutputPort(uint16_t value);
+            void toggleOutputPin();
     };
 }

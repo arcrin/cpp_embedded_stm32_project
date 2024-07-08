@@ -4,13 +4,14 @@
 
 #include "stm32f407xx.h"
 using namespace stm32f407;
-void delay() {
-    for(uint32_t i = 0; i < 50000; i++);
-}
 
+// void delay() {
+//     for(uint32_t i = 0; i < 50000; i++);
+// }
+GPIOHandle ledHandle;
+GPIOHandle buttonHandle;
 
-
-int main() {
+void ledHandleInit() {
     GPIOPinConfig ledPinConfig(
         GPIOPinNumber::PIN12,
         GPIOPinMode::OUTPUT,
@@ -19,10 +20,13 @@ int main() {
         GPIOPinOutputType::PUSH_PULL,
         GPIOPinAltMode::ALT0
     );
-    GPIOHandle ledGPIOHandle(GPIOD, ledPinConfig);
 
+    ledHandle = GPIOHandle(GPIOD, ledPinConfig);
+    ledHandle.init();
 
+}
 
+void buttonHandleInit() {
     GPIOPinConfig buttonPinConfig(
         GPIOPinNumber::PIN0,
         GPIOPinMode::INPUT_RT,
@@ -32,10 +36,15 @@ int main() {
         GPIOPinAltMode::ALT0
     );
 
-    GPIOHandle buttonGPIOHandle(GPIOA, buttonPinConfig);
+    buttonHandle = GPIOHandle(GPIOA, buttonPinConfig);
+    buttonHandle.init();
+}
 
-    ledGPIOHandle.init();
-    buttonGPIOHandle.init();
+int main() {
+    // SysTickInit(16000);
+    ledHandleInit();
+    buttonHandleInit();
+
     nvicSetPriority(NVICIRQNumbers::EXTI0, 15); 
     nvicEnableIRQ(NVICIRQNumbers::EXTI0);
 
@@ -48,9 +57,10 @@ int main() {
 extern "C" {
     void EXTI0_IRQHandler() {
         if (EXTI->PR & (1 << 0)) {
-            GPIOHandle::toggleOutputPin(GPIOD, GPIOPinNumber::PIN12);
+            ledHandle.toggleOutputPin();
             EXTI->PR = EXTI->PR | (1 << 0);
-            delay();
+            delay(100);
         }
     }
 }
+
