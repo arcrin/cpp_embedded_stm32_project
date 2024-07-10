@@ -3,7 +3,6 @@
 #include "stm32f407xx.h"
 
 namespace stm32f407 {
-    #define handle_name 
 
     enum class GPIOPinNumber : uint8_t {
         PIN0,

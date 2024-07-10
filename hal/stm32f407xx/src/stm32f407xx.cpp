@@ -5,7 +5,7 @@ namespace stm32f407{
 
     void SysTickInit(uint32_t load_value) {
         SysTick->CTRL = 0UL;
-        SysTick->LOAD = load_value;
+        SysTick->LOAD = load_value - 1;
         SysTick->VAL = 0UL;
         SysTick->CTRL = 7UL;
     }   
@@ -14,16 +14,19 @@ namespace stm32f407{
         return g_sysTickCounter;
     }
 
-    void delay(uint32_t delay_ms) {
+    void delay_ms(uint32_t delay_ms) {
         uint32_t start_tick = get_ticks();
         uint32_t wait = delay_ms;
         while ((get_ticks() - start_tick) < wait);
     }
 
-    extern "C" {
-        void SysTick_Handler() {
-            g_sysTickCounter = g_sysTickCounter + 1;
-        }
-    }  
+    
+
+
 }
 
+extern "C" {
+    void SysTick_Handler() {
+        stm32f407::g_sysTickCounter = stm32f407::g_sysTickCounter + 1;
+    }
+}  

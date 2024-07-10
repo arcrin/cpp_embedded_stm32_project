@@ -14,6 +14,13 @@ namespace stm32f103{
     constexpr uint32_t APB2PERIPH_BASEADDR = 0x40010000U;
     constexpr uint32_t AHBPERIPH_BASEADDR = 0x40018000U;
 
+
+
+
+    /***************************************************************
+     * RCC 
+     ***************************************************************/
+
     struct RCCRegDef {
         volatile uint32_t CR;            /*!< RCC clock control register,                                  Address offset: 0x00 */
         volatile uint32_t CFGR;          /*!< RCC clock configuration register,                            Address offset: 0x04 */

@@ -86,7 +86,7 @@ namespace stm32f407 {
             volatile USARTWordLength m_wordLength;
             volatile USARTParity m_parity;
             volatile USARTFlowControl m_flowControl;
-
+            USARTConfig() = default;
             USARTConfig(
                 USARTMode mode,
                 USARTBaud baud,
@@ -115,12 +115,21 @@ namespace stm32f407 {
 
             void periClockControl(ClockStatus status);
         public:
+            USARTHandle() = default;
             USARTHandle(USARTRegDef* usartRegDef, const USARTConfig& usartConfig): m_pUSARTx(usartRegDef), m_usartConfig(usartConfig) {};
 
             void init();    
-            void deInit();  
+            // void deInit();  
             
-            void setBaudRate(USARTBaud baudRate);
+            void sendData(uint8_t* pTxBuffer, uint32_t txLength);
+            void receiveData(uint8_t* pRxBuffer, uint32_t rxLength);
+
+            // Other peripheral control APIs    
+            uint8_t getFlagStatus(uint8_t statusFlagBit);
+            void clearFlag(uint8_t statusFlagBit); 
+            void peripheralControl(bool enable);   
+            void setBaudRate();
+        
     };
 
 }

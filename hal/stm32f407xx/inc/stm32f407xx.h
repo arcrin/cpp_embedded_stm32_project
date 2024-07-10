@@ -19,6 +19,35 @@ namespace stm32f407{
     constexpr uint32_t AHB1PERIPH_BASEADDR = 0x40020000U;
     constexpr uint32_t AHB2PERIPH_BASEADDR = 0x50000000U;
 
+
+    /***************************************************************
+     * SCB
+     ***************************************************************/
+    struct SCBRegDef {
+        volatile uint32_t CPUID;
+        volatile uint32_t ICSR;
+        volatile uint32_t VTOR;
+        volatile uint32_t AIRCR;
+        volatile uint32_t SCR;
+        volatile uint32_t CCR;
+        volatile uint32_t SHPR[3];
+        volatile uint32_t SHCSR;
+        volatile uint32_t CFSR;
+        volatile uint32_t MMSR;
+        volatile uint32_t BFSR;
+        volatile uint32_t UFSR;
+        volatile uint32_t HFSR;
+        volatile uint32_t MMAR;
+        volatile uint32_t BFAR;
+        volatile uint32_t AFSR;
+    };
+
+    inline SCBRegDef* SCB = reinterpret_cast<SCBRegDef*>(0xE000ED00U);
+
+    inline void enableSysTick() {
+        SCB->SHCSR = SCB->SHCSR | (1 << 11);
+    }
+
     /****************************************************
      * SysTick
      ****************************************************/
@@ -37,7 +66,7 @@ namespace stm32f407{
 
     uint32_t get_ticks();
 
-    void delay(uint32_t delay_ms);
+    void delay_ms(uint32_t delay_ms);
 
 
     /****************************************************
@@ -59,7 +88,8 @@ namespace stm32f407{
         volatile uint32_t STIR;
     };
 
-    enum class NVICIRQNumbers : uint8_t {
+    enum class NVICIRQNumbers : int8_t {
+        HardFault = -1,
         EXTI0 = 6,
         EXTI1 = 7,
         EXTI2 = 8,
@@ -96,7 +126,11 @@ namespace stm32f407{
     }
 
     inline void nvicSetPriority(NVICIRQNumbers irqNumber, uint8_t priority) {
-        NVIC->IPR[static_cast<uint8_t>(irqNumber)] = priority << NVIC_PRIORITY_BITS;
+        if (static_cast<int8_t>(irqNumber) >= 0) {
+            NVIC->IPR[static_cast<int8_t>(irqNumber)] = priority << NVIC_PRIORITY_BITS;
+        } else {
+            SCB->SHPR[(static_cast<int8_t>(irqNumber) & 0xF) - 4] = priority << NVIC_PRIORITY_BITS;
+        }
     }
 
 
@@ -501,9 +535,11 @@ namespace stm32f407{
     }
 };  // namespace 
 
-
+#define disable_irq()       do{asm volatile("cpsid i");} while(0)
+#define enable_irq()        do{asm volatile("cpsie i");} while(0)
 
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_usart_driver.h"
+#include "stm32f407xx_rcc_driver.h"
 
 
