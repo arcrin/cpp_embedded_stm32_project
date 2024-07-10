@@ -54,7 +54,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 
 target_link_options(${EXECUTABLE} PRIVATE
         -T ${HAL_DIR}/linker.ld
-        -nostdlib
+        # -nostdlib
         -mcpu=${MACH}
         -mthumb
         -mfloat-abi=soft

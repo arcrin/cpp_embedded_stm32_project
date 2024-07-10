@@ -4,8 +4,9 @@
 
 #include "stm32f407xx.h"
 #include "stm_discovery_board.h"
+#include <cstring>
 
-char msg_buffer[] = {'a'};
+char msg_buffer[1024] = "UART Tx testing...\n\r";
 
 int main() {
     disable_irq();
@@ -23,8 +24,7 @@ int main() {
     while(1) {
         delay_ms(1000);
         // ledHandle.toggleOutputPin();
-        usart2Handle.sendData((uint8_t*)msg_buffer, 1);
-        
+        usart2Handle.sendData((uint8_t*)msg_buffer, strlen(msg_buffer));
     }
 }
 

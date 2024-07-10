@@ -39,7 +39,7 @@ void buttonHandleInit() {
     nvicEnableIRQ(NVICIRQNumbers::EXTI0);
 }
 
-void ueartGPIOInit() {
+void usartGPIOInit() {
     GPIOPinConfig usartTxPinConfig(
         GPIOPinNumber::PIN2,
         GPIOPinMode::ALT,
@@ -65,6 +65,7 @@ void ueartGPIOInit() {
 }
 
 void usart2Init() {
+    usartGPIOInit();
     USARTConfig usartConfig(
         USARTMode::TX,
         USARTBaud::BAUD_9600,
