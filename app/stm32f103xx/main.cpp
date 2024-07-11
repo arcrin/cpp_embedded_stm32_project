@@ -1,50 +1,44 @@
 #include "stm32f103xx.h"
+#include "clc_board.h"
 
 using namespace stm32f103;
 
-void delay() {
-    for(uint32_t i = 0; i < 500000; i++);
-}
+
 
 int main() {
-    GPIOPinConfig ledRedPinConfig(
-        GPIOPinNumber::PIN0,
-        GPIOPinMode::OUTPUT_10MHZ,
-        GPIOPinIOConfig::OUTPUT_PP
-    );
+    disable_irq();
 
-    GPIOHandle ledRedGPIOHandle(GPIOE, ledRedPinConfig);
+    SysTickInit(16000);
 
-    GPIOPinConfig ledGreenPinConfig(
-        GPIOPinNumber::PIN1,
-        GPIOPinMode::OUTPUT_10MHZ,
-        GPIOPinIOConfig::OUTPUT_PP
+    ledRedInit();
+    ledGreenInit(); 
+    ledRelay1Init();
+    swRelay1Init();
     
-    );
+    ledRedGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
+    ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
+    ledRelay1GPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
 
-    GPIOHandle ledGreenGPIOHandle(GPIOE, ledGreenPinConfig);
+    nvicSetPriority(NVICIRQNumbers::SysTick, 1);
 
-    GPIOPinConfig led1PinConfig(
-        GPIOPinNumber::PIN8,
-        GPIOPinMode::OUTPUT_10MHZ,
-        GPIOPinIOConfig::OUTPUT_PP
-    );
-
-    GPIOHandle led1GPIOHandle(GPIOE, led1PinConfig);
-
-    ledRedGPIOHandle.init();
-    ledGreenGPIOHandle.init();    
-    led1GPIOHandle.init();
-
-
-    GPIOHandle::writeToOutputPin(ledRedGPIOHandle.getGPIOx(), ledRedGPIOHandle.getPinNumber(), GPIOPinState::SET);
-    GPIOHandle::writeToOutputPin(ledGreenGPIOHandle.getGPIOx(), ledGreenGPIOHandle.getPinNumber(), GPIOPinState::SET);
-    GPIOHandle::writeToOutputPin(led1GPIOHandle.getGPIOx(), led1GPIOHandle.getPinNumber(), GPIOPinState::CLEAR);
+    enable_irq();
 
     while (1)
     {
-        // delay();
-        // GPIOHandle::toggleOutputPin(led1GPIOHandle.getGPIOx(), led1GPIOHandle.getPinNumber());
+        // uint8_t sw1State = swRelay1GPIOHandle.readFromInputPin();
+        // if (sw1State == 1)
+        // {
+        //     ledRedGPIOHandle.writeToOutputPin(GPIOPinState::SET);
+        //     ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
+        // }
+        // else
+        // {
+        //     ledRedGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
+        //     ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::SET);
+        // }
+        // led1GPIOHandle.toggleOutputPin(); 
+        delayInMs(1000);
+        ledRelay1GPIOHandle.toggleOutputPin();
     }
     
 }

@@ -1,5 +1,4 @@
-#ifndef INC_STM32F103XX_GPIO_DRIVER_H_
-#define INC_STM32F103XX_GPIO_DRIVER_H_
+#pragma once
 
 #include "stm32f103xx.h"
 
@@ -43,6 +42,9 @@ namespace stm32f103 {
         OUTPUT_10MHZ,
         OUTPUT_2MHZ,
         OUTPUT_50MHZ,
+        INPUT_RT,
+        INPUT_FT,
+        INPUT_RFT
     };
     
     class GPIOPinConfig {
@@ -51,6 +53,7 @@ namespace stm32f103 {
             volatile GPIOPinMode m_pinMode;
             volatile GPIOPinIOConfig m_pinIOConfig;
 
+            GPIOPinConfig() = default;
             GPIOPinConfig(
                 GPIOPinNumber pinNumber,
                 GPIOPinMode pinMode,
@@ -67,23 +70,19 @@ namespace stm32f103 {
             GPIOPinConfig m_pinConfig;
 
         public:
+            GPIOHandle() = default;
             GPIOHandle(GPIORegDef* gpioRegDef, const GPIOPinConfig& pinConfig) :
                 m_pGPIOx(gpioRegDef), m_pinConfig(pinConfig) {};
+
+            void periClockControl(ClockStatus status); 
 
             void init();
             void deInit();
 
-            void periClockControl(ClockStatus status); 
-
-            GPIORegDef* getGPIOx() const { return m_pGPIOx; }
-            GPIOPinNumber getPinNumber() const { return m_pinConfig.m_pinNumber; }
-
-            static uint8_t readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
-            static uint16_t readFromInputPort(GPIORegDef* pGPIOx);
-            static void writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState);
-            static void writeOutputPort(GPIORegDef* pGPIOx, uint16_t value);
-            static void toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber);
+            uint8_t readFromInputPin();
+            uint16_t readFromInputPort();
+            void writeToOutputPin(GPIOPinState pinState);
+            void writeOutputPort(uint16_t value);
+            void toggleOutputPin();
     };
 }
-
-#endif

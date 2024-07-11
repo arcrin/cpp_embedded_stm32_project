@@ -1,5 +1,4 @@
 #include "stm32f103xx_gpio_driver.h"
-#include <variant>
 
 using namespace stm32f103;
 
@@ -59,12 +58,51 @@ void GPIOHandle::init() {
     // Enable clock
     periClockControl(ClockStatus::ENABLE);  
 
-    // Configure the mode of the GPIO pin, and its IO configuration
     uint8_t reg_level = static_cast<uint8_t>(m_pinConfig.m_pinNumber) / 8;
     uint8_t reg_offest = static_cast<uint8_t>(m_pinConfig.m_pinNumber) % 8;
-    uint8_t reg_value = (static_cast<uint8_t>(m_pinConfig.m_pinIOConfig) << 2) + static_cast<uint8_t>(m_pinConfig.m_pinMode);
-    m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] & ~(0xF << (reg_offest * 4));  // reest the bits
-    m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] | (reg_value << (reg_offest * 4));
+
+    // Configure the mode of the GPIO pin, and its IO configuration
+    // There are essentially 2 modes: input and output; each mode has 4 configurations
+
+
+    if (m_pinConfig.m_pinMode == GPIOPinMode::INPUT_FT || 
+        m_pinConfig.m_pinMode == GPIOPinMode::INPUT_RT ||
+        m_pinConfig.m_pinMode == GPIOPinMode::INPUT_RFT) {
+            // For interrupt mode, the pin needs to be in input mode (0x0), configured as input_pupd (0x2) 
+            uint8_t reg_value = (static_cast<uint8_t>(GPIOPinIOConfig::INPUT_PUPD) << 2) + static_cast<uint8_t>(GPIOPinMode::INPUT);
+            m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] & ~(0xF << (reg_offest * 4));  // reest the bits  
+            m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] | (reg_value << (reg_offest * 4));  // set the bits
+            // configure the detection mode (rising of falling edge) in EXTI registers
+            if (m_pinConfig.m_pinMode == GPIOPinMode::INPUT_RT) {
+                EXTI->RTSR = EXTI->RTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+                EXTI->FTSR = EXTI->FTSR & ~(1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+            } else if (m_pinConfig.m_pinMode == GPIOPinMode::INPUT_FT) {
+                EXTI->FTSR = EXTI->FTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+                EXTI->RTSR = EXTI->RTSR & ~(1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+            } else {
+                EXTI->RTSR = EXTI->RTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+                EXTI->FTSR = EXTI->FTSR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+            }
+            // map the port to the EXTI channel in AFIO registers; and enable AFIO clock
+            enebleAFIOClock();
+            uint8_t exti_reg_level = static_cast<uint8_t>(m_pinConfig.m_pinNumber) / 4;
+            uint8_t exti_reg_offset = static_cast<uint8_t>(m_pinConfig.m_pinNumber) % 4;
+            AFIO->EXTICR[exti_reg_level] = AFIO->EXTICR[exti_reg_level] & ~(0xF << (exti_reg_offset * 4));  // reset the bits
+            uint8_t port_code = getGPIOPortCode(m_pGPIOx);
+            AFIO->EXTICR[exti_reg_level] = (port_code << (exti_reg_offset * 4));  // set the bits
+
+            // enable EXTI interrupt in EXTI->IMR
+            EXTI->IMR = EXTI->IMR | (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+
+
+        } else {
+            // For regular IO mode, the pin mode and pin config enum can be directly mapped into the CR register
+            
+            uint8_t reg_value = (static_cast<uint8_t>(m_pinConfig.m_pinIOConfig) << 2) + static_cast<uint8_t>(m_pinConfig.m_pinMode);
+            m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] & ~(0xF << (reg_offest * 4));  // reest the bits
+            m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] | (reg_value << (reg_offest * 4));
+
+        }
 }
 
 /**
@@ -100,8 +138,9 @@ void GPIOHandle::deInit() {
  *
  * @return The input value of the GPIO pin (0 or 1).
  */
-uint8_t GPIOHandle::readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
-    return (pGPIOx->IDR & (1 << static_cast<uint8_t>(pinNumber)) >> static_cast<uint8_t>(pinNumber));
+uint8_t GPIOHandle::readFromInputPin() {
+    // watch out for the operator precedence
+    return ((m_pGPIOx->IDR & (1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber))) >> static_cast<uint8_t>(m_pinConfig.m_pinNumber));
 }
 
 /**
@@ -109,8 +148,8 @@ uint8_t GPIOHandle::readFromInputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber
  *
  * @return The input data from the GPIO port.
  */
-uint16_t GPIOHandle::readFromInputPort(GPIORegDef* pGPIOx) {
-    return (uint16_t) pGPIOx->IDR;
+uint16_t GPIOHandle::readFromInputPort() {
+    return (uint16_t) m_pGPIOx->IDR;
 }
 
 /**
@@ -122,11 +161,13 @@ uint16_t GPIOHandle::readFromInputPort(GPIORegDef* pGPIOx) {
  *                 - `GPIOPinState::CLEAR` to clear the pin (set it to low).
  *                 - `GPIOPinState::SET` to set the pin (set it to high).
  */
-void GPIOHandle::writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, GPIOPinState pinState) {
+void GPIOHandle::writeToOutputPin(GPIOPinState pinState) {
     if (pinState == GPIOPinState::CLEAR) {
-        pGPIOx->ODR = pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(pinNumber));
+        // m_pGPIOx->ODR = m_pGPIOx->ODR & ~(0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        m_pGPIOx->BSRR = m_pGPIOx->BSRR | (0x1 << (static_cast<uint8_t>(m_pinConfig.m_pinNumber) + 16));
     } else {
-        pGPIOx->ODR = pGPIOx->ODR | (0x1 << static_cast<uint8_t>(pinNumber));
+        // m_pGPIOx->ODR = m_pGPIOx->ODR | (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
+        m_pGPIOx->BSRR = m_pGPIOx->BSRR | (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
     }
 }
 
@@ -138,8 +179,8 @@ void GPIOHandle::writeToOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber, G
  * 
  * @param value The value to be written to the output data register.
  */
-void GPIOHandle::writeOutputPort(GPIORegDef* pGPIOx, uint16_t value) {
-    pGPIOx->ODR = value;
+void GPIOHandle::writeOutputPort(uint16_t value) {
+    m_pGPIOx->ODR = value;
 }
 
 /**
@@ -154,6 +195,8 @@ void GPIOHandle::writeOutputPort(GPIORegDef* pGPIOx, uint16_t value) {
  * @see GPIOHandle::initialize
  * @see GPIOHandle::configurePin
  */
-void GPIOHandle::toggleOutputPin(GPIORegDef* pGPIOx, GPIOPinNumber pinNumber) {
-    pGPIOx->ODR = pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(pinNumber));
+void GPIOHandle::toggleOutputPin() {
+    // the BSRR register is write only, can not get the current state of the pin fro BSRR
+    // So, use ODR directly for toggle operation. Note ODR is only Word accessible
+    m_pGPIOx->ODR = m_pGPIOx->ODR ^ (0x1 << static_cast<uint8_t>(m_pinConfig.m_pinNumber));
 }

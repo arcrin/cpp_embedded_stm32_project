@@ -30,7 +30,7 @@ namespace stm32f407{
         volatile uint32_t AIRCR;
         volatile uint32_t SCR;
         volatile uint32_t CCR;
-        volatile uint32_t SHPR[3];
+        volatile uint8_t SHPR[12];
         volatile uint32_t SHCSR;
         volatile uint32_t CFSR;
         volatile uint32_t MMSR;
@@ -43,10 +43,6 @@ namespace stm32f407{
     };
 
     inline SCBRegDef* SCB = reinterpret_cast<SCBRegDef*>(0xE000ED00U);
-
-    inline void enableSysTick() {
-        SCB->SHCSR = SCB->SHCSR | (1 << 11);
-    }
 
     /****************************************************
      * SysTick
@@ -89,7 +85,12 @@ namespace stm32f407{
     };
 
     enum class NVICIRQNumbers : int8_t {
-        HardFault = -1,
+        MemManage = -12,
+        BusFault = -11,
+        UsageFault = -11,
+        SVCall = -5,
+        PendSV = -2,
+        SysTick = -1,
         EXTI0 = 6,
         EXTI1 = 7,
         EXTI2 = 8,
@@ -129,11 +130,9 @@ namespace stm32f407{
         if (static_cast<int8_t>(irqNumber) >= 0) {
             NVIC->IPR[static_cast<int8_t>(irqNumber)] = priority << NVIC_PRIORITY_BITS;
         } else {
-            SCB->SHPR[(static_cast<int8_t>(irqNumber) & 0xF) - 4] = priority << NVIC_PRIORITY_BITS;
+            SCB->SHPR[(static_cast<int8_t>(irqNumber) & 0xF) - 4] = priority << (8 - NVIC_PRIORITY_BITS);
         }
     }
-
-
 
     /***************************************************************
      * EXTI
@@ -148,11 +147,6 @@ namespace stm32f407{
     };
 
     inline EXTIRegDef* EXTI = reinterpret_cast<EXTIRegDef*>(0x40013C00U);
-
-
-
-
-
 
     /****************************************************************
      * RCC register structure

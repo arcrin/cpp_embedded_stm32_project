@@ -25,7 +25,7 @@ __attribute__((weak, alias("Default_Handler"))) void UsageFault_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void SVC_Handler(void);      
 __attribute__((weak, alias("Default_Handler"))) void DebugMon_Handler(void); 
 __attribute__((weak, alias("Default_Handler"))) void PendSV_Handler(void);   
-__attribute__((weak, alias("Default_Handler"))) void SysTick_Handler(void);  
+void SysTick_Handler(void);  
 __attribute__((weak, alias("Default_Handler"))) void WWDG_IRQHandler(void);  
 __attribute__((weak, alias("Default_Handler"))) void PVD_IRQHandler(void);   
 __attribute__((weak, alias("Default_Handler"))) void TAMPER_IRQHandler(void);
@@ -49,7 +49,7 @@ __attribute__((weak, alias("Default_Handler"))) void USB_HP_CAN1_TX_IRQHandler(v
 __attribute__((weak, alias("Default_Handler"))) void USB_LP_CAN1_RX0_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void CAN1_RX1_IRQHandler(void); 
 __attribute__((weak, alias("Default_Handler"))) void CAN1_SCE_IRQHandler(void); 
-__attribute__((weak, alias("Default_Handler"))) void EXTI9_5_IRQHandler(void);  
+void EXTI9_5_IRQHandler(void);  
 __attribute__((weak, alias("Default_Handler"))) void TIM1_BRK_IRQHandler(void); 
 __attribute__((weak, alias("Default_Handler"))) void TIM1_UP_IRQHandler(void);  
 __attribute__((weak, alias("Default_Handler"))) void TIM1_TRG_COM_IRQHandler(void); 

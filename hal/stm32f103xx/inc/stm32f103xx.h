@@ -1,8 +1,7 @@
-#ifndef INC_STM32F103V8_H_
-#define INC_STM32F103V8_H_
+#pragma once
 
 #include <cstdint>
-namespace stm32f103{
+namespace stm32f103 {
     enum class ClockStatus
     {
         ENABLE,
@@ -14,7 +13,114 @@ namespace stm32f103{
     constexpr uint32_t APB2PERIPH_BASEADDR = 0x40010000U;
     constexpr uint32_t AHBPERIPH_BASEADDR = 0x40018000U;
 
+    /***************************************************************
+     * SCB
+     ***************************************************************/
+    struct SCBRegDef {
+        volatile uint32_t CPUID;
+        volatile uint32_t ICSR;
+        volatile uint32_t VTOR;
+        volatile uint32_t AIRCR;
+        volatile uint32_t SCR;
+        volatile uint32_t CCR;
+        volatile uint8_t SHPR[12];
+        volatile uint32_t SHCSR;
+        volatile uint32_t CFSR;
+        volatile uint32_t MMSR;
+        volatile uint32_t BFSR;
+        volatile uint32_t UFSR;
+        volatile uint32_t HFSR;
+        volatile uint32_t MMAR;
+        volatile uint32_t BFAR;
+        volatile uint32_t AFSR;
+    };
 
+    inline SCBRegDef* SCB = reinterpret_cast<SCBRegDef*>(0xE000ED00U);
+
+
+    /*****************************************************************
+     * SysTick
+     *****************************************************************/
+    struct SysTickRegDef {
+        volatile uint32_t CTRL;
+        volatile uint32_t LOAD;
+        volatile uint32_t VAL;
+        volatile uint32_t CALIB;
+    };
+
+    inline SysTickRegDef* SysTick = reinterpret_cast<SysTickRegDef*>(0xE000E010U);
+
+    extern volatile uint32_t g_sysTickCounter;
+
+    void SysTickInit(uint32_t loadValue);
+    
+    uint32_t getTicks();
+
+    void delayInMs(uint32_t ms);
+
+    /***************************************************************
+     * NVIC
+     ***************************************************************/
+    struct NVICRegDef {
+        volatile uint32_t ISER[8U]; /*!< NVIC interrupt set-enable register, Address offset: 0x00 */
+                 uint32_t RESERVED0[24U];
+        volatile uint32_t ICER[8U]; /*!< NVIC interrupt clear-enable register, Address offset: 0x80 */
+                 uint32_t RSERVED1[24U];
+        volatile uint32_t ISPR[8U]; /*!< NVIC interrupt set-pending register, Address offset: 0x100 */
+                 uint32_t RESERVED2[24U];
+        volatile uint32_t ICPR[8U]; /*!< NVIC interrupt clear-pending register, Address offset: 0x180 */
+                 uint32_t RESERVED3[24U];
+        volatile uint32_t IABR[8U]; /*!< NVIC interrupt active bit register, Address offset: 0x200 */
+                 uint32_t RESERVED4[56U];
+        volatile uint8_t IPR[60U];  /*!< NVIC interrupt priority register, Address offset: 0x300 */
+        volatile uint32_t STIR;     /*!< Software trigger interrupt register, Address offset: 0xE00 */
+    };
+    
+    inline NVICRegDef* NVIC = reinterpret_cast<NVICRegDef*>(0xE000E100U);
+
+    enum class NVICIRQNumbers: int8_t {        
+        MemManage = -12,
+        BusFault = -11,
+        UsageFault = -11,
+        SVCall = -5,
+        PendSV = -2,
+        SysTick = -1,
+        EXTI0 = 6,
+        EXTI1 = 7,
+        EXTI2 = 8,
+        EXTI3 = 9,
+        EXTI4 = 10,
+        EXTI9_5 = 23,
+        EXTI15_10 = 40,
+    };
+
+    const uint8_t NVIC_PRIORITY_BITS = 4;
+
+    inline void nvicEnableIRQ(NVICIRQNumbers irqNumber) {
+        if (static_cast<int8_t>(irqNumber) <= 32) {
+            NVIC->ISER[0] = NVIC->ISER[0] | (1 << static_cast<int8_t>(irqNumber));
+        } else if (static_cast<int8_t>(irqNumber) > 32 && static_cast<int8_t>(irqNumber) <= 64) {
+            NVIC->ISER[1] = NVIC->ISER[1] | (1 << (static_cast<int8_t>(irqNumber) % 32));
+        } 
+    }
+
+
+    inline void nvicDisableIRQ(NVICIRQNumbers irqNumber) {
+        if (static_cast<int8_t>(irqNumber) <= 32) {
+            NVIC->ICER[0] = NVIC->ICER[0] | (1 << static_cast<int8_t>(irqNumber));
+        } else if (static_cast<int8_t>(irqNumber) > 32 && static_cast<int8_t>(irqNumber) <= 64) {
+            NVIC->ICER[1] = NVIC->ICER[1] | (1 << (static_cast<int8_t>(irqNumber) % 32));
+        } 
+    }
+
+    inline void nvicSetPriority(NVICIRQNumbers irqNumber, uint8_t priority) {
+        if (static_cast<int8_t>(irqNumber) >= 0) {
+            NVIC->IPR[static_cast<int8_t>(irqNumber)] = (priority << (8 - NVIC_PRIORITY_BITS));    
+        } else {
+            int8_t exceptionIrqPosition = (static_cast<int8_t>(irqNumber) & 0xf) - 4;
+            SCB->SHPR[exceptionIrqPosition] = priority << (8 - NVIC_PRIORITY_BITS);
+        }
+    }
 
 
     /***************************************************************
@@ -130,6 +236,25 @@ namespace stm32f103{
     inline GPIORegDef* GPIOF = reinterpret_cast<GPIORegDef*>(GPIOF_BASEADDR);
     inline GPIORegDef* GPIOG = reinterpret_cast<GPIORegDef*>(GPIOG_BASEADDR);
 
+    inline int8_t getGPIOPortCode(GPIORegDef* pGPIOx) {
+        if (pGPIOx == GPIOA) {
+            return 0;
+        } else if (pGPIOx == GPIOB) {
+            return 1;
+        } else if (pGPIOx == GPIOC) {
+            return 2;
+        } else if (pGPIOx == GPIOD) {
+            return 3;
+        } else if (pGPIOx == GPIOE) {
+            return 4;
+        } else if (pGPIOx == GPIOF) {
+            return 5;
+        } else if (pGPIOx == GPIOG) {
+            return 6;
+        }
+        return -1;
+    }
+
     /*
      * GPIO reset functions
      */
@@ -167,7 +292,39 @@ namespace stm32f103{
         RCC->APB2RSTR = RCC->APB2RSTR | (1 << 8);
         RCC->APB2RSTR = RCC->APB2RSTR & ~(1 << 8);
     }
+
+    /***********************************************
+     * AFIO
+     ***********************************************/
+    struct AFIORegDef {
+        volatile uint32_t EVCR;        /*!< AFIO Event control register (AFIO_EVCR),                 Address offset: 0x00 */
+        volatile uint32_t MAPR;        /*!< AFIO MAP control register (AFIO_MAPR),                   Address offset: 0x04 */
+        volatile uint32_t EXTICR[4];   /*!< AFIO External interrupt configuration registers,         Address offset: 0x08-0x14 */
+        volatile uint32_t MAPR2;       /*!< AFIO MAP control register 2,                             Address offset: 0x18 */
+    };
+
+    inline AFIORegDef* AFIO = reinterpret_cast<AFIORegDef*>(0x40010000U);
+
+    inline void enebleAFIOClock() {
+        RCC->APB2ENR = RCC->APB2ENR | (1 << 0);
+    }
+
+    /***********************************************
+     * EXTI
+     ***********************************************/
+    struct EXTIRegDef {
+        volatile uint32_t IMR; /*!< EXTI Interrupt mask register, Address offset: 0x00 */
+        volatile uint32_t EMR; /*!< EXTI Event mask register, Address offset: 0x04 */
+        volatile uint32_t RTSR; /*!< EXTI Rising trigger selection register, Address offset: 0x08 */
+        volatile uint32_t FTSR; /*!< EXTI Falling trigger selection register, Address offset: 0x0C */
+        volatile uint32_t SWIER; /*!< EXTI Software interrupt event register, Address offset: 0x10 */
+        volatile uint32_t PR; /*!< EXTI Pending register, Address offset: 0x14 */
+    };
+    
+    inline EXTIRegDef* EXTI = reinterpret_cast<EXTIRegDef*>(0x40010400U);
 }
 
+#define disable_irq()       do{asm volatile("cpsid i");} while(0)
+#define enable_irq()        do{asm volatile("cpsie i");} while(0)
+
 #include "stm32f103xx_gpio_driver.h"
-#endif

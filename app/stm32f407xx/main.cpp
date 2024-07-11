@@ -11,7 +11,7 @@ char msg_buffer[1024] = "UART Tx testing...\n\r";
 int main() {
     disable_irq();
     RCCUtil::RCCSetClockSource(RCCClockSource::HSI);
-    nvicSetPriority(NVICIRQNumbers::HardFault, 0); // Set priority group to 0
+    nvicSetPriority(NVICIRQNumbers::SysTick, 0); // Set priority group to 0
 
     SysTickInit(16000);
     ledHandleInit();
