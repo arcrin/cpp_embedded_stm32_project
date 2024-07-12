@@ -10,14 +10,14 @@ namespace stm32f407{
         SysTick->CTRL = 7UL;
     }   
 
-    uint32_t get_ticks(){
+    uint32_t getTicks(){
         return g_sysTickCounter;
     }
 
     void delay_ms(uint32_t delay_ms) {
-        uint32_t start_tick = get_ticks();
+        uint32_t start_tick = getTicks();
         uint32_t wait = delay_ms;
-        while ((get_ticks() - start_tick) < wait);
+        while ((getTicks() - start_tick) < wait);
     }
 
     

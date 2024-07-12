@@ -78,6 +78,8 @@ void usart2Init() {
     usart2Handle = USARTHandle(USART2, usartConfig);
     usart2Handle.init();
     usart2Handle.peripheralControl(true);
+    // nvicEnableIRQ(NVICIRQNumbers::USART2);
+    // nvicSetPriority(NVICIRQNumbers::USART2, 14);
 }
 
 

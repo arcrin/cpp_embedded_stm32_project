@@ -14,6 +14,7 @@ int main() {
     nvicSetPriority(NVICIRQNumbers::SysTick, 0); // Set priority group to 0
 
     SysTickInit(16000);
+    
     ledHandleInit();
     buttonHandleInit();
     usart2Init();

@@ -39,46 +39,48 @@ void USARTHandle::init() {
 
     // Transmit or receive mode
     if (m_usartConfig.m_mode == USARTMode::RX) {
-        m_pUSARTx->CR1 = (1 << USART_CR1_RE);
+        m_pUSARTx->CR1 = (1 << static_cast<uint8_t>(USARTCR1Bit::RE));
     } else if (m_usartConfig.m_mode == USARTMode::TX) {
-        m_pUSARTx->CR1 = (1 << USART_CR1_TE);
+        m_pUSARTx->CR1 = (1 << static_cast<uint8_t>(USARTCR1Bit::TE));
     } else if (m_usartConfig.m_mode == USARTMode::TX_RX) {
-        m_pUSARTx->CR1 = (1 << USART_CR1_RE) | (1 << USART_CR1_TE);
+        m_pUSARTx->CR1 = (1 << static_cast<uint8_t>(USARTCR1Bit::RE)) | (1 << static_cast<uint8_t>(USARTCR1Bit::TE));
     }
 
     // word length select
-    m_pUSARTx->CR1 = m_pUSARTx->CR1 | (static_cast<uint8_t>(m_usartConfig.m_wordLength) << USART_CR1_M);
+    m_pUSARTx->CR1 = m_pUSARTx->CR1 | (static_cast<uint8_t>(m_usartConfig.m_wordLength) << static_cast<uint8_t>(USARTCR1Bit::M));
 
     // parity control
     if (m_usartConfig.m_parity == USARTParity::EVEN) {
-        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << USART_CR1_PCE);
-        m_pUSARTx->CR1 = m_pUSARTx->CR1 & ~(1 << USART_CR1_PS);
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << static_cast<uint8_t>(USARTCR1Bit::PCE));
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 & ~(1 << static_cast<uint8_t>(USARTCR1Bit::PS));
     } else if (m_usartConfig.m_parity == USARTParity::ODD) {
-        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << USART_CR1_PCE);
-        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << USART_CR1_PS);
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << static_cast<uint8_t>(USARTCR1Bit::PCE));
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << static_cast<uint8_t>(USARTCR1Bit::PS));
     }  
 
     // stop bits
-    m_pUSARTx->CR2 = m_pUSARTx->CR2 | (static_cast<uint8_t>(m_usartConfig.m_stopBits) << USART_CR2_STOP);
+    m_pUSARTx->CR2 = m_pUSARTx->CR2 | (static_cast<uint8_t>(m_usartConfig.m_stopBits) << static_cast<uint8_t>(USARTCR2Bit::STOP));
 
     // hardware flow control
     if (m_usartConfig.m_flowControl == USARTFlowControl::CTS) {
-        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_CTSE);
+        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << static_cast<uint8_t>(USARTCR3Bit::CTSE));
     } else if (m_usartConfig.m_flowControl == USARTFlowControl::RTS) {
-        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_RTSE);
+        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << static_cast<uint8_t>(USARTCR3Bit::RTSE));
     } else if (m_usartConfig.m_flowControl == USARTFlowControl::RTS_CTS) {
-        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_CTSE);
-        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << USART_CR3_RTSE);
+        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << static_cast<uint8_t>(USARTCR3Bit::CTSE));
+        m_pUSARTx->CR3 = m_pUSARTx->CR3 | (1 << static_cast<uint8_t>(USARTCR3Bit::RTSE));
     }
     // set baud rate
     setBaudRate();
+    m_txSate = USARTLineStatus::Ready;
+    m_rxSate = USARTLineStatus::Ready;
 }
 
 void USARTHandle::sendData(uint8_t* pTxBuffer, uint32_t txLength) {
     uint16_t* pData;
     // Loop over until "txLength" number of bytes are transferred   
     for (uint32_t i = 0; i < txLength; i++) {
-        while (!getFlagStatus(USART_SR_TXE));
+        while (!static_cast<uint8_t>(getFlagStatus(USARTStatusFlags::TransmitDataRegisterEmpty)));
         if (m_usartConfig.m_wordLength == USARTWordLength::NINE_BITS) {
             // if 9-bit load the DR with 2 bytes masking the bits other than first 9 bits
             pData = (uint16_t*) pTxBuffer;
@@ -96,13 +98,13 @@ void USARTHandle::sendData(uint8_t* pTxBuffer, uint32_t txLength) {
             // Increment the buffer address
             pTxBuffer++;
         }
-        while(!getFlagStatus(USART_SR_TC));
+        while(!static_cast<uint8_t>(getFlagStatus(USARTStatusFlags::TransmissionComplete)));
     }
 }
 
 void USARTHandle::receiveData(uint8_t* pRxBuffer, uint32_t rxLength) {
     for (uint32_t i = 0; i < rxLength; i++) {
-        while(getFlagStatus(USART_SR_RXNE));
+        while(static_cast<uint8_t>(getFlagStatus(USARTStatusFlags::ReceiveDataRegisterNotEmtpy)));
         if (m_usartConfig.m_wordLength == USARTWordLength::NINE_BITS) {
             if (m_usartConfig.m_parity == USARTParity::NONE) {
                 *((uint16_t*) pRxBuffer) = (m_pUSARTx->DR & (uint16_t) 0x01ff);
@@ -139,7 +141,7 @@ void USARTHandle::setBaudRate() {
     }
 
     // check for OVER8 (oversampling setting)   
-    if (m_pUSARTx->CR1 & (1 << USART_CR1_OVER8)) {
+    if (m_pUSARTx->CR1 & (1 << static_cast<uint8_t>(USARTCR1Bit::OVER8))) {
         usartDiv = ((25 * peripheralClock) / (2 * static_cast<uint32_t>(m_usartConfig.m_baud)));
     } else {
         usartDiv = ((25 * peripheralClock) / (4 * static_cast<uint32_t>(m_usartConfig.m_baud))); 
@@ -153,7 +155,7 @@ void USARTHandle::setBaudRate() {
     fraction = (usartDiv - (mantissa * 100));   
 
     // calculate the final fraction
-    if (m_pUSARTx->CR1 & (1 << USART_CR1_OVER8)) {
+    if (m_pUSARTx->CR1 & (1 << static_cast<uint8_t>(USARTCR1Bit::OVER8))) {
         fraction = (((fraction * 8) + 50) / 100) & (uint8_t)0x07;
     } else {
         fraction = (((fraction * 16) + 50) / 100) & (uint8_t)0x0F;
@@ -165,21 +167,51 @@ void USARTHandle::setBaudRate() {
     m_pUSARTx->BRR = tempreg;
 }
 
-uint8_t USARTHandle::getFlagStatus(uint8_t statusFlagBit) {
-    if (m_pUSARTx->SR & (1 << statusFlagBit)) {
-        return 1;
+BitStatus USARTHandle::getFlagStatus(USARTStatusFlags statusFlag) {
+    if (m_pUSARTx->SR & (1 << static_cast<uint8_t>(statusFlag))) {
+        return BitStatus::SET;  
     }
-    return 0;   
+    return BitStatus::CLEAR;   
 }
 
-void USARTHandle::clearFlag(uint8_t statusFlagBit) {
-    m_pUSARTx->SR = m_pUSARTx->SR & ~(1 << statusFlagBit);
+void USARTHandle::clearFlag(USARTStatusFlags statusFlag) {
+    m_pUSARTx->SR = m_pUSARTx->SR & ~(1 << static_cast<uint8_t>(statusFlag));
 }   
 
 void USARTHandle::peripheralControl(bool enable) {
     if (enable) {
-        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << USART_CR1_UE);
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << static_cast<uint8_t>(USARTCR1Bit::UE));
     } else {
-        m_pUSARTx->CR1 = m_pUSARTx->CR1 & ~(1 << USART_CR1_UE);
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 & ~(1 << static_cast<uint8_t>(USARTCR1Bit::UE));
     }
 }
+
+// void USARTHandle::irqHandler() {
+//     uint32_t temp1, temp2, temp3;
+//     uint16_t* pData;
+
+//     /*************Check for TC (Transmission Complete) flag**********************/
+//     // Check the TC flag from SR
+//     temp1 = m_pUSARTx->SR & (1 << static_cast<uint8_t>(USARTStatusFlags::TransmissionComplete));
+//     // Check TCIE (Transmission Complete Interrupt Enable) bit from CR1
+//     temp2 = m_pUSARTx->CR1 & (1 << static_cast<uint8_t>(USARTCR1Bit::TCIE));
+
+//     if (temp1 & temp2){
+//         // Interrupt handling for TC (Transmission Complete)   
+//         // Close transmission and call application callback if TxLen is zero
+//         if (m_txSate == USARTLineStatus::BusyInTx) {
+//             // Check the word length
+//         }
+//     }
+// } 
+
+// void USARTHandle::receiveDataWithInterrupt(uint8_t* pRxBuffer, uint32_t rxLength){
+//     for (uint32_t i = 0; i < rxLength; i++) {
+//         // wait until the 
+//         while(!static_cast<uint8_t>(getFlagStatus(USARTStatusFlags::ReceiveDataRegisterNotEmtpy)));
+//     }
+// }
+
+// void USARTHandle::sendDataWithInterrupt(uint8_t* pTxBuffer, uint32_t txLength) {
+
+// }

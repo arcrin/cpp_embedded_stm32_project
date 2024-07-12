@@ -50,17 +50,64 @@ namespace stm32f407 {
         RTS_CTS
     };
 
-    enum class USARTFlags : uint8_t {
-        TXE = 0x7U,
-        TC = 0x6U,
-        RXNE = 0x5U,
-        IDLE = 0x4U,
-        ORE = 0x3U,
-        NF = 0x2U,
-        FE = 0x1U,
-        PE = 0x0U
+    enum class USARTStatusFlags : uint8_t {
+        ParityError = 0x0U,
+        FramingError = 0x1U,
+        NoiseFlag = 0x2U,
+        OverrunError = 0x3U,
+        IdleDetected = 0x4U,
+        ReceiveDataRegisterNotEmtpy = 0x5U,
+        TransmissionComplete = 0x6U,
+        TransmitDataRegisterEmpty = 0x7U,
+        LINBreak = 0x08U,
+        CTSFlag = 0x9U,
     };
     
+    enum class USARTCR1Bit : uint8_t {
+        SBK = 0,
+        RWU = 1,
+        RE = 2,
+        TE = 3,
+        IDLEIE = 4,
+        RXNEIE = 5,
+        TCIE = 6,
+        TXEIE = 7,
+        PEIE = 8,
+        PS = 9,
+        PCE = 10,
+        WAKE = 11,
+        M = 12,
+        UE = 13,
+        OVER8 = 15
+    };
+
+    enum class USARTCR2Bit : uint8_t {
+        ADD = 0,
+        LBDL = 5,
+        LBDIE = 6,
+        LBCL = 8,
+        CPHA = 9,
+        CPOL = 10,
+        CLKEN = 11,
+        STOP = 12,
+        LINEN = 14
+    };
+
+    enum class USARTCR3Bit : uint8_t {
+        EIE = 0,
+        IREN = 1,
+        IRLP = 2,
+        HDSEL = 3,
+        NACK = 4,
+        SCEN = 5,
+        DMAR = 6,
+        DMAT = 7,
+        RTSE = 8,
+        CTSE = 9,
+        CTSIE = 10,
+        ONEBIT = 11
+    };
+
     enum class USARTAppStatus : uint8_t {
         BUSY_IN_RX,
         BUSY_IN_TX,
@@ -74,9 +121,13 @@ namespace stm32f407 {
         ERR_ORE
     };
 
-    /**********************************
-    * API
-    ***********************************/
+
+    enum class USARTLineStatus : uint8_t {
+        BusyInRx,
+        BusyInTx,
+        Ready,
+    };  
+
    // Peripheral clock setup
     class USARTConfig {
         public:
@@ -106,14 +157,19 @@ namespace stm32f407 {
         private:
             USARTRegDef* m_pUSARTx;
             USARTConfig m_usartConfig;
-            // uint8_t* pTxBUffer;
-            // uint8_t* pRxBUffer;
-            // uint32_t txLen;
-            // uint32_t rxLen;
-            // bool txBusySatte;
-            // bool rxBusySatte;
+            uint8_t* m_pTxBUffer;
+            uint8_t* m_pRxBUffer;
+            uint32_t m_txLen;
+            uint32_t m_rxLen;
+            USARTLineStatus m_txSate;
+            USARTLineStatus m_rxSate;
 
             void periClockControl(ClockStatus status);
+
+            // USART status flags API
+            BitStatus getFlagStatus(USARTStatusFlags statusFlag);
+            void clearFlag(USARTStatusFlags statusFlag); 
+            
         public:
             USARTHandle() = default;
             USARTHandle(USARTRegDef* usartRegDef, const USARTConfig& usartConfig): m_pUSARTx(usartRegDef), m_usartConfig(usartConfig) {};
@@ -125,10 +181,12 @@ namespace stm32f407 {
             void receiveData(uint8_t* pRxBuffer, uint32_t rxLength);
 
             // Other peripheral control APIs    
-            uint8_t getFlagStatus(uint8_t statusFlagBit);
-            void clearFlag(uint8_t statusFlagBit); 
             void peripheralControl(bool enable);   
             void setBaudRate();
+
+            void irqHandler();    
+            void receiveDataWithInterrupt(uint8_t* pRxBuffer, uint32_t rxLength);
+            void sendDataWithInterrupt(uint8_t* pTxBuffer, uint32_t txLength);
         
     };
 
