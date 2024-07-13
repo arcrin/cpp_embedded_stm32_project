@@ -113,8 +113,7 @@ namespace stm32f407 {
         public:
             GPIOHandle() = default;
             GPIOHandle(GPIORegDef* gpioRegDef, const GPIOPinConfig& pinConfig): 
-                m_pGPIOx(gpioRegDef), m_pinConfig(pinConfig) {
-            };
+                m_pGPIOx(gpioRegDef), m_pinConfig(pinConfig) {};
             
             void periClockControl(ClockStatus status);
             

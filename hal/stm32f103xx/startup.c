@@ -16,6 +16,8 @@ extern uint32_t uwTick;
 
 int main(void); 
 
+extern void __libc_init_array(void);
+
 void Reset_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void NMI_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void HardFault_Handler(void);
@@ -192,6 +194,8 @@ void Reset_Handler(void)
     {
         *pDst++ = 0;
     }
+
+    __libc_init_array();
 
     main();
 }

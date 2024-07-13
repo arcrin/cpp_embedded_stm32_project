@@ -4,8 +4,8 @@ set(CMAKE_COLOR_MAKEFILE OFF)
 
 # Set this variable to match the MCU you are working with. 
 # At this point, it needs to match the dir name where the HAL is defined.
-set(MCU_TYPE stm32f407xx)
-# set(MCU_TYPE stm32f103xx)
+# set(MCU_TYPE stm32f407xx)
+set(MCU_TYPE stm32f103xx)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/arm-none-eabi-gpp.cmake)

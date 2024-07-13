@@ -72,8 +72,9 @@ void USARTHandle::init() {
     }
     // set baud rate
     setBaudRate();
-    m_txSate = USARTLineStatus::Ready;
-    m_rxSate = USARTLineStatus::Ready;
+    m_txState = USARTLineStatus::Ready;
+    m_rxState = USARTLineStatus::Ready;
+    peripheralControl(true);
 }
 
 void USARTHandle::sendData(uint8_t* pTxBuffer, uint32_t txLength) {
@@ -186,32 +187,163 @@ void USARTHandle::peripheralControl(bool enable) {
     }
 }
 
-// void USARTHandle::irqHandler() {
-//     uint32_t temp1, temp2, temp3;
-//     uint16_t* pData;
+USARTLineStatus USARTHandle::receiveDataWithInterrupt(uint8_t* pRxBuffer, uint32_t rxLength){
+    USARTLineStatus rxState = m_rxState;
+    if (rxState != USARTLineStatus::BusyInRx) {
+        m_rxLen = rxLength;
+        m_pRxBuffer = pRxBuffer;
+        m_rxState = USARTLineStatus::BusyInRx;
+        (void) m_pUSARTx->DR;
 
-//     /*************Check for TC (Transmission Complete) flag**********************/
-//     // Check the TC flag from SR
-//     temp1 = m_pUSARTx->SR & (1 << static_cast<uint8_t>(USARTStatusFlags::TransmissionComplete));
-//     // Check TCIE (Transmission Complete Interrupt Enable) bit from CR1
-//     temp2 = m_pUSARTx->CR1 & (1 << static_cast<uint8_t>(USARTCR1Bit::TCIE));
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << static_cast<uint8_t>(USARTCR1Bit::RXNEIE));
+    }
+    return rxState;
+}
 
-//     if (temp1 & temp2){
-//         // Interrupt handling for TC (Transmission Complete)   
-//         // Close transmission and call application callback if TxLen is zero
-//         if (m_txSate == USARTLineStatus::BusyInTx) {
-//             // Check the word length
-//         }
-//     }
-// } 
+USARTLineStatus USARTHandle::sendDataWithInterrupt(uint8_t* pTxBuffer, uint32_t txLength) {
+    USARTLineStatus txState = m_txState;
+    if (txState != USARTLineStatus::BusyInTx) {
+        m_txLen = txLength;
+        m_pTxBuffer = pTxBuffer;
+        m_rxState = USARTLineStatus::BusyInTx;
 
-// void USARTHandle::receiveDataWithInterrupt(uint8_t* pRxBuffer, uint32_t rxLength){
-//     for (uint32_t i = 0; i < rxLength; i++) {
-//         // wait until the 
-//         while(!static_cast<uint8_t>(getFlagStatus(USARTStatusFlags::ReceiveDataRegisterNotEmtpy)));
-//     }
-// }
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << static_cast<uint8_t>(USARTCR1Bit::TXEIE));          
 
-// void USARTHandle::sendDataWithInterrupt(uint8_t* pTxBuffer, uint32_t txLength) {
+        m_pUSARTx->CR1 = m_pUSARTx->CR1 | (1 << static_cast<uint8_t>(USARTCR1Bit::TCIE));
+    }
 
-// }
+    return txState;
+}
+
+void USARTHandle::irqHandler() {
+    uint32_t temp1, temp2;
+    uint16_t* pData;    
+    /********************Check for TC flag*****************************/
+    // Check the stat of TC (Transmission Complete) flag in the SR
+    temp1 = m_pUSARTx->SR & (1 << static_cast<uint8_t>(USARTStatusFlags::TransmissionComplete));
+    // Check the state of TCIE (Transmission Complete Interrupt Enable) bit in the CR1
+    temp2 = m_pUSARTx->CR1 & (1 << static_cast<uint8_t>(USARTCR1Bit::TCIE));
+
+    // When both TC and TCIE are set, the transmission complete interrupt is generated
+    if (temp1 && temp2) {
+        // Check the transmission line state
+        if (m_txState == USARTLineStatus::BusyInTx) {
+            // Check the m_txLen. If it is zero then close the data transmission
+            if (!m_txLen) {
+                // Clear the TC flag
+                clearFlag(USARTStatusFlags::TransmissionComplete);
+                // NOTE: Clear the TCIE bit ?? Wouldn't this disable the interrupt?
+                m_pUSARTx->CR1 = m_pUSARTx->CR1 & ~(1 << static_cast<uint8_t>(USARTCR1Bit::TCIE));
+                // Reset the transmission state  
+                m_txState = USARTLineStatus::Ready;
+                // Reset buffer address to NULL
+                m_pTxBuffer = nullptr;
+                // Reset the transmission length to zero
+                m_txLen = 0;
+
+                // TODO: Call the application callback function with event USART_EVENT_TX_COMPLETE
+            }
+        }
+    }
+
+    /********************Check for TXE flag*****************************/
+    // Check the state of TXE (Transmit Data Register Empty) flag in the SR 
+    temp1 = m_pUSARTx->SR & (1 << static_cast<uint8_t>(USARTStatusFlags::TransmitDataRegisterEmpty));
+    // Check the state of the TXEIE (Transmit Data Register Empty Interrupt Enable) bit in the CR1 
+    temp2 = m_pUSARTx->CR1 & (1 << static_cast<uint8_t>(USARTCR1Bit::TXEIE));
+
+    // Transmit data register empty interrupt handling. 
+    // TXE of SR is set when the content of the TDR register has been transferred into the shift register.
+    if (temp1 && temp2) {
+        // Check the transmission line state
+        if (m_txState == USARTLineStatus::BusyInTx) {
+            // Keep sending data until transmission length is zero  
+            if (m_txLen > 0) {
+                // data send logic based on the word length (8bit or 9bit)
+                if (m_usartConfig.m_wordLength == USARTWordLength::NINE_BITS) {
+                    // if 9-bit load the DR with 2 bytes masking the bits other than first 9 bits
+                    pData = (uint16_t*) m_pTxBuffer;
+                    m_pUSARTx->DR = (*pData & (uint16_t) 0x01ff);
+
+                    // Check for parity bit
+                    if (m_usartConfig.m_parity == USARTParity::NONE) {
+                        // If there is not parity bit, 9 bits of user data will be sent 
+                        // increment the buffer twice
+                        m_pTxBuffer++;
+                        m_pTxBuffer++;
+                        m_txLen -= 2;
+                    } else {
+                        // If there is a parity bit, 8 bits of user data will be sent
+                        // the 9th bit will be replaced by parity bit by the hardware
+                        m_pTxBuffer++;
+                        m_txLen--;
+                    }
+                } else {
+                    // This is 8 bit data transfer
+                    m_pUSARTx->DR = (*m_pTxBuffer & (uint8_t) 0xff);
+
+                    // Increment the buffer address
+                    m_pTxBuffer++;
+                    m_txLen--;
+                }
+            }
+
+            if (m_txLen == 0) {
+                // transmission length is zero, transmission is complete
+                // Clear TXEIE bit (disable the TXE flag)
+                m_pUSARTx->CR1 = m_pUSARTx->CR1 & ~(1 << static_cast<uint8_t>(USARTCR1Bit::TXEIE));
+            }
+        }
+    }    
+    /****************************Check for RXNE flag ************************************/
+    temp1 = m_pUSARTx->SR & (1 << static_cast<uint8_t>(USARTStatusFlags::ReceiveDataRegisterNotEmtpy));
+    temp2 = m_pUSARTx->CR1 & (1 << static_cast<uint8_t>(USARTCR1Bit::RXNEIE));
+
+    if (temp1 && temp2) {
+        // Receive data register not empty interrupt handling
+        if (m_rxState == USARTLineStatus::BusyInRx) {
+            if(m_rxLen > 0) {
+                // Check the word length    
+                if (m_usartConfig.m_wordLength == USARTWordLength::NINE_BITS) {
+                    // Check the parity bit
+                    if (m_usartConfig.m_parity == USARTParity::NONE) {
+                        // If there is no parity bit, all 9 bits are user data
+                        // Read only first 9 bits
+                        *((uint16_t*) m_pRxBuffer) = m_pUSARTx->DR & (uint16_t) 0x01ff;
+
+                        m_pRxBuffer++;
+                        m_pRxBuffer++;
+                        m_rxLen -= 2;
+                    } else {
+                        // Parity bit was used, 8 bits are user data and 1 parity bit
+                        *m_pRxBuffer = m_pUSARTx->DR & (uint8_t) 0xff;
+                        m_pRxBuffer++;
+                        m_rxLen--;
+                    }
+                } else {
+                    // Receiving 8-bit data in a frame
+                    // Need to check the parity bit
+                    if (m_usartConfig.m_parity == USARTParity::NONE) {
+                        // No parity bit used, all 8 bits are user data
+                        // Read 8 bits from DR
+                        *m_pRxBuffer = m_pUSARTx->DR & (uint8_t) 0xff;
+                    } else {
+                        // Parity bit used, 7 bits user data, 1 bit parity
+                        // Read 7 bits from DR
+                        *m_pRxBuffer = m_pUSARTx->DR & (uint8_t) 0x7f;
+                    }
+                    // Increment the buffer address
+                    m_pRxBuffer++;
+                    m_rxLen--;
+                }
+            }
+            if (!m_rxLen) {
+                // Data receive is complete
+                // Disable RXNE
+                m_pUSARTx->CR1 = m_pUSARTx->CR1 & ~(1 << static_cast<uint8_t>(USARTCR1Bit::RXNEIE));
+                m_rxState = USARTLineStatus::Ready;
+                applicationEventCallback(USARTAppStatus::RX_COMPLETE);
+            }
+        }
+    }
+}

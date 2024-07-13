@@ -33,6 +33,25 @@ SECTIONS
     } >FLASH
     __exidx_end = .;
 
+    .init_array :
+    {
+        . = ALIGN(4);
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP(*(.preinit_array))   /* Pre-initializers */
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+
+        . = ALIGN(4);
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP(*(SORT(.init_array.*))) /* Initializers */
+        KEEP(*(.init_array))
+        PROVIDE_HIDDEN (__init_array_end = .);
+
+        . = ALIGN(4);
+        PROVIDE_HIDDEN (__fini_array_start = .);
+        KEEP(*(.fini_array))   /* Destructors */
+        PROVIDE_HIDDEN (__fini_array_end = .);
+    } > FLASH
+
     _la_data = LOADADDR(.data);
 
     .data :

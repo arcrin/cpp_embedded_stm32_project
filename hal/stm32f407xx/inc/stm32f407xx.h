@@ -103,7 +103,7 @@ namespace stm32f407{
         EXTI4 = 10,
         EXTI9_5 = 23,
         EXTI15_10 = 40,
-        USART2 = 45,
+        USART2 = 38,
     };
 
     const uint8_t NVIC_PRIORITY_BITS = 4U;

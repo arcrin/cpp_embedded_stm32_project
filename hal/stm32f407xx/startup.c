@@ -16,7 +16,7 @@ extern uint32_t uwTick;
 
 int main(void);
 
-// void __libc_init_array(void);
+extern void __libc_init_array(void);
 
 
 void Reset_Handler(void);      
@@ -66,7 +66,7 @@ __attribute__((weak, alias("Default_Handler"))) void I2C2_ER_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void SPI1_IRQHandler(void);        
 __attribute__((weak, alias("Default_Handler"))) void SPI2_IRQHandler(void);        
 __attribute__((weak, alias("Default_Handler"))) void USART1_IRQHandler(void);      
-__attribute__((weak, alias("Default_Handler"))) void USART2_IRQHandler(void);      
+void USART2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void USART3_IRQHandler(void);      
 __attribute__((weak, alias("Default_Handler"))) void EXTI15_10_IRQHandler(void);       
 __attribute__((weak, alias("Default_Handler"))) void RTC_Alarm_IRQHandler(void);       
@@ -273,7 +273,7 @@ void Reset_Handler(void){
     for(uint32_t i = 0; i < size; i++) {
         *pDst++ = 0;
     }
-    // __libc_init_array();
+    __libc_init_array();
 
     // call main
     main();

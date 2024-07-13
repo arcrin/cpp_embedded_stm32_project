@@ -8,6 +8,11 @@ namespace stm32f103 {
         DISABLE,
     };
 
+    enum class BitStatus : uint8_t {
+        CLEAR,
+        SET,
+    };
+
     constexpr uint32_t PERIPH_BASEADDR = 0x40000000U; /*!< Peripheral base address */
     constexpr uint32_t APB1PERIPH_BASEADDR = PERIPH_BASEADDR;
     constexpr uint32_t APB2PERIPH_BASEADDR = 0x40010000U;
@@ -322,9 +327,57 @@ namespace stm32f103 {
     };
     
     inline EXTIRegDef* EXTI = reinterpret_cast<EXTIRegDef*>(0x40010400U);
+
+
+    /*****************************
+     * USART 
+     *****************************/
+    // Register
+    struct USARTRegDef {
+        volatile uint32_t SR;
+        volatile uint32_t DR;
+        volatile uint32_t BRR;
+        volatile uint32_t CR1;
+        volatile uint32_t CR2;
+        volatile uint32_t CR3;
+        volatile uint32_t GTPR;
+    };
+
+    inline USARTRegDef* USART1 = reinterpret_cast<USARTRegDef*>(0x40013800U);
+    inline USARTRegDef* USART2 = reinterpret_cast<USARTRegDef*>(0x40004400U);
+    inline USARTRegDef* USART3 = reinterpret_cast<USARTRegDef*>(0x40004800U);
+
+    // USART clock functions
+    // Clock enable
+    inline void enableUSART1Clock() {
+        RCC->APB2ENR = RCC->APB2ENR | (1 << 14);    
+    }
+
+    inline void enableUSART2Clock() {
+        RCC->APB1ENR = RCC->APB1ENR | (1 << 17);
+    }   
+
+    inline void enableUSART3Clock() {
+        RCC->APB1ENR = RCC->APB1ENR | (1 << 18);
+    }   
+
+    // CLock disable
+    inline void disableUSART1Clock() {
+        RCC->APB2ENR = RCC->APB2RSTR & ~(1 << 14);    
+    }   
+
+    inline void disableUSART2Clock() {
+        RCC->APB1ENR = RCC->APB1RSTR & ~(1 << 17);
+    }
+
+    inline void disableUSART3Clock() {
+        RCC->APB1ENR = RCC->APB1RSTR & ~(1 << 18);
+    }
+
 }
 
 #define disable_irq()       do{asm volatile("cpsid i");} while(0)
 #define enable_irq()        do{asm volatile("cpsie i");} while(0)
 
 #include "stm32f103xx_gpio_driver.h"
+#include "stm32f103xx_usart_driver.h"

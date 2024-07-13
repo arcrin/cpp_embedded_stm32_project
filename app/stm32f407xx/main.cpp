@@ -3,10 +3,9 @@
 //
 
 #include "stm32f407xx.h"
-#include "stm_discovery_board.h"
 #include <cstring>
+#include "stm_discovery_board.h"
 
-char msg_buffer[1024] = "UART Tx testing...\n\r";
 
 int main() {
     disable_irq();
@@ -15,19 +14,25 @@ int main() {
 
     SysTickInit(16000);
     
-    ledHandleInit();
-    buttonHandleInit();
-    usart2Init();
+    // NOTE: maybe I could include these nvic initializers inside the GPIOHandle::init() function
 
+    
+    ledHandle.init();
+
+    buttonHandle.init();
+    nvicSetPriority(NVICIRQNumbers::EXTI0, 15); 
+    nvicEnableIRQ(NVICIRQNumbers::EXTI0);
+
+    usartRxGPIOHandle.init();
+    usartTxGPIOHandle.init();
+    usart2Handle.init();
+    nvicEnableIRQ(NVICIRQNumbers::USART2);
+    nvicSetPriority(NVICIRQNumbers::USART2, 14);
 
     enable_irq();
 
     while(1) {
-        delay_ms(1000);
-        // ledHandle.toggleOutputPin();
-        usart2Handle.sendData((uint8_t*)msg_buffer, strlen(msg_buffer));
+        delay_ms(200);
+        while(usart2Handle.receiveDataWithInterrupt((uint8_t*) usartRxBuffer, 10) != USARTLineStatus::Ready);
     }
 }
-
-
-

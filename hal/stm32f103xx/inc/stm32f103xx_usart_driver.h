@@ -1,9 +1,7 @@
 #pragma once
+#include "stm32f103xx.h"
 
-#include "stm32f407xx.h"    
-
-namespace stm32f407 {
-
+namespace stm32f103 {
     enum class USARTMode : uint8_t {
         TX,
         RX,
@@ -34,7 +32,7 @@ namespace stm32f407 {
     enum class USARTWordLength : uint8_t {
         EIGHT_BITS,
         NINE_BITS
-    };  
+    };
 
     enum class USARTStopBits : uint8_t {
         ONE,
@@ -63,6 +61,7 @@ namespace stm32f407 {
         CTSFlag = 0x9U,
     };
     
+
     enum class USARTCR1Bit : uint8_t {
         SBK = 0,
         RWU = 1,
@@ -78,7 +77,6 @@ namespace stm32f407 {
         WAKE = 11,
         M = 12,
         UE = 13,
-        OVER8 = 15
     };
 
     enum class USARTCR2Bit : uint8_t {
@@ -93,7 +91,7 @@ namespace stm32f407 {
         LINEN = 14
     };
 
-    enum class USARTCR3Bit : uint8_t {
+    enum class USART3Bit : uint8_t {
         EIE = 0,
         IREN = 1,
         IRLP = 2,
@@ -104,8 +102,13 @@ namespace stm32f407 {
         DMAT = 7,
         RTSE = 8,
         CTSE = 9,
-        CTSIE = 10,
-        ONEBIT = 11
+        CTSIE = 10
+    };
+
+    enum class USARTLineStatus : uint8_t {
+        BusyInRx,
+        BusyInTx,
+        Ready,
     };
 
     enum class USARTAppStatus : uint8_t {
@@ -121,14 +124,6 @@ namespace stm32f407 {
         ERR_ORE
     };
 
-
-    enum class USARTLineStatus : uint8_t {
-        BusyInRx,
-        BusyInTx,
-        Ready,
-    };  
-
-   // Peripheral clock setup
     class USARTConfig {
         public:
             volatile USARTMode m_mode;
@@ -153,7 +148,7 @@ namespace stm32f407 {
                m_flowControl(flowControl) {}
     };
 
-    class USARTHandle {
+     class USARTHandle {
         private:
             USARTRegDef* m_pUSARTx;
             USARTConfig m_usartConfig;

@@ -19,10 +19,6 @@ namespace stm32f407{
         uint32_t wait = delay_ms;
         while ((getTicks() - start_tick) < wait);
     }
-
-    
-
-
 }
 
 extern "C" {

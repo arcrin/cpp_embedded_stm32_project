@@ -25,18 +25,6 @@ int main() {
 
     while (1)
     {
-        // uint8_t sw1State = swRelay1GPIOHandle.readFromInputPin();
-        // if (sw1State == 1)
-        // {
-        //     ledRedGPIOHandle.writeToOutputPin(GPIOPinState::SET);
-        //     ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
-        // }
-        // else
-        // {
-        //     ledRedGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
-        //     ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::SET);
-        // }
-        // led1GPIOHandle.toggleOutputPin(); 
         delayInMs(1000);
         ledRelay1GPIOHandle.toggleOutputPin();
     }
