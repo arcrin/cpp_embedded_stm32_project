@@ -26,7 +26,7 @@ int main() {
     while (1)
     {
         delayInMs(1000);
-        ledRelay1GPIOHandle.toggleOutputPin();
+        // ledRelay1GPIOHandle.toggleOutputPin();
     }
     
 }

@@ -91,7 +91,7 @@ namespace stm32f103 {
         LINEN = 14
     };
 
-    enum class USART3Bit : uint8_t {
+    enum class USARTCR3Bit : uint8_t {
         EIE = 0,
         IREN = 1,
         IRLP = 2,

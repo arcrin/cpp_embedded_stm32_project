@@ -3,7 +3,7 @@
 using namespace stm32f407;
 
 uint16_t AHB_PRE_SCALER[8] = {2, 4, 8, 16, 64, 128, 256, 512};  
-uint16_t APB1_PRE_SCALER[4] = {2, 4, 8, 16};
+uint16_t APB_PRE_SCALER[4] = {2, 4, 8, 16};
 
 uint32_t RCCUtil::RCCGetPLLOutputClock() {
     return 0;
@@ -11,7 +11,7 @@ uint32_t RCCUtil::RCCGetPLLOutputClock() {
 
 void RCCUtil::RCCSetClockSource(RCCClockSource clockSource) {
     if (clockSource == RCCClockSource::HSI) {
-        RCC->CFGR = RCC->CFGR & ~(0x3 << 1);
+        RCC->CFGR = RCC->CFGR & ~(0x3);
     }
 }
 
@@ -43,7 +43,7 @@ uint32_t RCCUtil::RCCGetPCLK1Value() {
     if (temp < 4) {
         abpPrescaler = 1;
     } else {
-        abpPrescaler = APB1_PRE_SCALER[temp - 4];
+        abpPrescaler = APB_PRE_SCALER[temp - 4];
     }
     periphera1Clock = (systemClock / ahbPrescaler) / abpPrescaler;   
 
@@ -73,7 +73,7 @@ uint32_t RCCUtil::RCCGetPCLK2Value() {
     if (temp < 0x04) {
         apb2Prescaler = 1; 
     } else {
-        apb2Prescaler = APB1_PRE_SCALER[temp - 4];
+        apb2Prescaler = APB_PRE_SCALER[temp - 4];
     }
 
     peripheral2Clock = (systemClock / ahpPrescaler) / apb2Prescaler;    

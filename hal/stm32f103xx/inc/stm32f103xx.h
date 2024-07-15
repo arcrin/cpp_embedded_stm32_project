@@ -381,3 +381,4 @@ namespace stm32f103 {
 
 #include "stm32f103xx_gpio_driver.h"
 #include "stm32f103xx_usart_driver.h"
+#include "stm32f103xx_rcc_driver.h"
