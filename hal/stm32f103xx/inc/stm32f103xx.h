@@ -96,6 +96,7 @@ namespace stm32f103 {
         EXTI3 = 9,
         EXTI4 = 10,
         EXTI9_5 = 23,
+        USART3 = 39,
         EXTI15_10 = 40,
     };
 

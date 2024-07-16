@@ -180,8 +180,8 @@ namespace stm32f103 {
             void setBaudRate();
 
             void irqHandler();    
-            USARTLineStatus receiveDataWithInterrupt(uint8_t* pRxBuffer, uint32_t rxLength);
-            USARTLineStatus sendDataWithInterrupt(uint8_t* pTxBuffer, uint32_t txLength);
+            void receiveDataWithInterrupt(uint8_t* pRxBuffer, uint32_t rxLength);
+            // USARTLineStatus sendDataWithInterrupt(uint8_t* pTxBuffer, uint32_t txLength);
             static void applicationEventCallback(USARTAppStatus appStatus) __attribute__((weak));
     };
 

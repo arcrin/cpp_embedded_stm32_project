@@ -2,67 +2,85 @@
 
 using namespace stm32f103;
 
-void delay() {
-    for(uint32_t i = 0; i < 5000; i++);
-}
+char usartRxBuffer[100];
 
-GPIOHandle ledRedGPIOHandle;    
-GPIOHandle ledGreenGPIOHandle;
-GPIOHandle ledRelay1GPIOHandle;
-GPIOHandle swRelay1GPIOHandle;
+GPIOPinConfig ledRedPinConfig(
+    GPIOPinNumber::PIN0,
+    GPIOPinMode::OUTPUT_10MHZ,
+    GPIOPinIOConfig::OUTPUT_PP
+);
 
-void ledRedInit() {
-    GPIOPinConfig ledRedPinConfig(
-        GPIOPinNumber::PIN0,
-        GPIOPinMode::OUTPUT_10MHZ,
-        GPIOPinIOConfig::OUTPUT_PP
-    );
+GPIOHandle ledRedGPIOHandle(GPIOE, ledRedPinConfig);
 
-    ledRedGPIOHandle = GPIOHandle(GPIOE, ledRedPinConfig);
-    ledRedGPIOHandle.init();
-}
+GPIOPinConfig ledGreenPinConfig(
+    GPIOPinNumber::PIN1,
+    GPIOPinMode::OUTPUT_10MHZ,
+    GPIOPinIOConfig::OUTPUT_PP
+);
 
-void ledGreenInit() {
-    GPIOPinConfig ledGreenPinConfig(
-        GPIOPinNumber::PIN1,
-        GPIOPinMode::OUTPUT_10MHZ,
-        GPIOPinIOConfig::OUTPUT_PP
-    );
-
-    ledGreenGPIOHandle = GPIOHandle(GPIOE, ledGreenPinConfig);
-    ledGreenGPIOHandle.init();
+GPIOHandle ledGreenGPIOHandle(GPIOE, ledGreenPinConfig);
     
-}
+GPIOPinConfig ledRelay1PinConfig(
+    GPIOPinNumber::PIN8,
+    GPIOPinMode::OUTPUT_10MHZ,
+    GPIOPinIOConfig::OUTPUT_PP
+);
 
-void ledRelay1Init() {
-    GPIOPinConfig ledRelay1PinConfig(
-        GPIOPinNumber::PIN8,
-        GPIOPinMode::OUTPUT_10MHZ,
-        GPIOPinIOConfig::OUTPUT_PP
-    );
-
-    ledRelay1GPIOHandle = GPIOHandle(GPIOE, ledRelay1PinConfig);
-    ledRelay1GPIOHandle.init();
-}
-
-void swRelay1Init() {
-    GPIOPinConfig swRelay1PinConfig(
-        GPIOPinNumber::PIN8,
-        GPIOPinMode::INPUT_FT,
-        GPIOPinIOConfig::INPUT_PUPD
-    );
-
-    swRelay1GPIOHandle = GPIOHandle(GPIOC, swRelay1PinConfig);
-    swRelay1GPIOHandle.init();
-    nvicSetPriority(NVICIRQNumbers::EXTI9_5, 15);
-    nvicEnableIRQ(NVICIRQNumbers::EXTI9_5);
-}
+GPIOHandle ledRelay1GPIOHandle(GPIOE, ledRelay1PinConfig);
 
 
-extern "C" void EXTI9_5_IRQHandler() {
-    if (EXTI->PR & (1 << 8)) {
-        EXTI->PR = EXTI->PR | (1 << 8);
-        delay();
-        ledRelay1GPIOHandle.toggleOutputPin();
+GPIOPinConfig swRelay1PinConfig(
+    GPIOPinNumber::PIN8,
+    GPIOPinMode::INPUT_FT,
+    GPIOPinIOConfig::INPUT_PUPD
+);
+
+GPIOHandle swRelay1GPIOHandle(GPIOC, swRelay1PinConfig);
+
+GPIOPinConfig usart3TxPinConfig(
+    GPIOPinNumber::PIN10,
+    GPIOPinMode::OUTPUT_2MHZ,
+    GPIOPinIOConfig::AF_PP
+);
+
+GPIOHandle usart3TxGPIOHandle(GPIOB, usart3TxPinConfig);
+
+GPIOPinConfig usart3RxPinConfig(
+    GPIOPinNumber::PIN11,
+    GPIOPinMode::INPUT,
+    GPIOPinIOConfig::FLOAT
+);
+
+GPIOHandle usart3RxGPIOHandle(GPIOB, usart3RxPinConfig);
+
+USARTConfig usart3Config(
+    USARTMode::TX_RX,
+    USARTBaud::BAUD_9600,
+    USARTStopBits::ONE,
+    USARTWordLength::EIGHT_BITS,
+    USARTParity::NONE,
+    USARTFlowControl::NONE
+);
+
+USARTHandle usart3Handle(USART3, usart3Config);
+
+
+extern "C" {
+    void EXTI9_5_IRQHandler() {
+        if (EXTI->PR & (1 << 8)) {
+            ledRelay1GPIOHandle.toggleOutputPin();
+            delayInMs(200);
+            EXTI->PR = EXTI->PR | (1 << 8);
+        }
     }
+} 
+
+extern "C" {
+    void USART3_IRQHandler(void) {
+        usart3Handle.irqHandler();
+    }
+}
+
+void USARTHandle::applicationEventCallback(USARTAppStatus appStatus) {
+    usart3Handle.sendData((uint8_t*)usartRxBuffer, sizeof(usartRxBuffer));
 }

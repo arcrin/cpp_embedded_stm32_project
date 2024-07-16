@@ -42,7 +42,7 @@ GPIOPinConfig usartTxPinConfig(
 GPIOHandle usartTxGPIOHandle(GPIOA, usartTxPinConfig);
 
 
-    GPIOPinConfig usartRxPinConfig(
+GPIOPinConfig usartRxPinConfig(
     GPIOPinNumber::PIN3,
     GPIOPinMode::ALT,
     GPIOPinSpeed::HIGH,

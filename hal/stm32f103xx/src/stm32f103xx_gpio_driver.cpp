@@ -97,8 +97,33 @@ void GPIOHandle::init() {
 
         } else {
             // For regular IO mode, the pin mode and pin config enum can be directly mapped into the CR register
+            uint8_t ioConfig = 0x0;
+
+            switch (m_pinConfig.m_pinIOConfig) {
+                case GPIOPinIOConfig::ANALOG:
+                    ioConfig = 0x0;
+                    break;
+                case GPIOPinIOConfig::FLOAT:
+                    ioConfig = 0x1;
+                    break;
+                case GPIOPinIOConfig::INPUT_PUPD:
+                    ioConfig = 0x2;
+                    break;
+                case GPIOPinIOConfig::OUTPUT_PP:
+                    ioConfig = 0x0;
+                    break;
+                case GPIOPinIOConfig::OUTPUT_OD:
+                    ioConfig = 0x1;
+                    break;
+                case GPIOPinIOConfig::AF_PP:
+                    ioConfig = 0x2;
+                    break;
+                case GPIOPinIOConfig::AF_OD:
+                    ioConfig = 0x3;
+                    break;
+            }
             
-            uint8_t reg_value = (static_cast<uint8_t>(m_pinConfig.m_pinIOConfig) << 2) + static_cast<uint8_t>(m_pinConfig.m_pinMode);
+            uint8_t reg_value = (ioConfig << 2) + static_cast<uint8_t>(m_pinConfig.m_pinMode);
             m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] & ~(0xF << (reg_offest * 4));  // reest the bits
             m_pGPIOx->CR[reg_level] = m_pGPIOx->CR[reg_level] | (reg_value << (reg_offest * 4));
 

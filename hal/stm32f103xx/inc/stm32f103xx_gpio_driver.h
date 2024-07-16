@@ -28,13 +28,13 @@ namespace stm32f103 {
     };
 
     enum class GPIOPinIOConfig : uint8_t {
-        ANALOG = 0x0,
-        FLOAT = 0x1,
-        INPUT_PUPD = 0x2,
-        OUTPUT_PP = 0x0,
-        OUTPUT_OD = 0x1,
-        AF_PP = 0x2,
-        AF_OD = 0x3
+        ANALOG,
+        FLOAT,
+        INPUT_PUPD,
+        OUTPUT_PP,
+        OUTPUT_OD,
+        AF_PP,
+        AF_OD
     };
 
     enum class GPIOPinMode : uint8_t {
