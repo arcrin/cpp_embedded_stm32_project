@@ -29,7 +29,7 @@ int main() {
     usart3Handle.receiveDataWithInterrupt((uint8_t*) usartRxBuffer, 5);
     
     
-    ledRedGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
+    ledRedGPIOHandle.writeToOutputPin(GPIOPinState::SET);
     ledGreenGPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
     ledRelay1GPIOHandle.writeToOutputPin(GPIOPinState::CLEAR);
     enable_irq();

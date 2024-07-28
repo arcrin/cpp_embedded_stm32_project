@@ -72,5 +72,18 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
         COMMAND ${CMAKE_SIZE_UTIL} $<TARGET_FILE:${EXECUTABLE}>
         COMMENT "Printing size of the executable ${EXECUTABLE}"
         COMMAND arm-none-eabi-objdump -S -C ${PROJECT_NAME}.elf > ${PROJECT_NAME}.lst
+        COMMAND arm-none-eabi-objcopy -O ihex ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
 )
+
+
+# add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+#         COMMAND arm-none-eabi-objcopy -O ihex ${TARGET_NAME}.elf ${TARGET_NAME}.hex
+#         COMMAND ${CMAKE_COMMAND} -E copy ${TARGET_NAME}.hex ${CMAKE_SOURCE_DIR}/../firmware/test_firmware/${TARGET_NAME}.hex
+#         COMMAND arm-none-eabi-objcopy -O binary ${TARGET_NAME}.elf ${TARGET_NAME}.bin
+#         COMMAND arm-none-eabi-nm -C -l -n -S ${TARGET_NAME}.elf > ${TARGET_NAME}.sym
+#         COMMAND arm-none-eabi-nm -C -l --size-sort -S ${TARGET_NAME}.elf > ${TARGET_NAME}.symsize
+#         COMMAND arm-none-eabi-objdump -S -C ${TARGET_NAME}.elf > ${TARGET_NAME}.lst
+#         COMMAND ${CMAKE_COMMAND} -Dsource="${TARGET_NAME}.siz" -Ddestination="${TARGET_NAME}_prev.siz" -P "${CMAKE_SOURCE_DIR}/copy.cmake"
+#         COMMAND arm-none-eabi-size ${TARGET_NAME}.elf > ${TARGET_NAME}.siz
+# )
 
